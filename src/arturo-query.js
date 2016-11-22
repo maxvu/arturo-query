@@ -19,13 +19,16 @@ class expr {
             this._children = subexprs;
         this.negated = false;
     }
+    
     negate () {
         this.negated = !this.negated;
         return this;
     }
+    
     getType () {
         return T_CONJ;
     }
+    
     getSize () {
         let totalSize = 0;
         this._children.forEach( ( child ) => {
@@ -38,12 +41,18 @@ class expr {
         return totalSize;
     }
     
-    // TODO: distributivism of conj and disj, remove parens
+    isRecursive () {
+        return true;
+    }
+    
+    isNegated () {
+        return this.negated ? true : false;
+    }
     
     getCanonical () {
         let canonical = '';
         if ( this.negated )
-            canonical += 'NOT ';
+            canonical += '!';
         canonical += '( ';
         this._children.forEach( ( child ) => {
             canonical += child.getCanonical();
@@ -52,6 +61,60 @@ class expr {
         } );
         canonical += ' )';
         return canonical;
+    }
+    
+    refactor () {
+        let clone = new expr;
+        Object.assign( clone, this );
+        
+        // AND and OR have the distributive property -- flatten those out
+        let flattened = [];
+        clone._children.forEach( ( child ) => {
+            if ( child.getType() === this.getType() ) {
+                child._children.forEach( ( grandchild ) => {
+                    flattened.push(
+                        child.negated ? grandchild.negate() : grandchild
+                    );
+                } );
+            } else {
+                flattened.push( child );
+            }
+        } );
+        clone._children = flattened;
+        
+        // expressions can be replaced with their only child
+        flattened = [];
+        clone._children.forEach( ( child ) => {
+            if ( child._children.length === 1 ) {
+                flattened.push(
+                    child.isNegated()
+                        ? child._children[ 0 ].negate()
+                        : child._children[ 0 ]
+                );
+            } else {
+                flattened.push( child );
+            }
+        } );
+        clone._children = flattened;
+        
+        // top-down order
+        clone._children.forEach( ( child ) => {
+            child.refactor();
+        } );
+        
+        return clone;
+    }
+    
+    satisfies ( condition ) {
+        if ( !condition( this ) )
+            return;
+        var toggle = true;
+        this._children.forEach( ( child ) => {
+            if ( !condition( child ) )
+                toggle = false;
+                return;
+        } );
+        return toggle;
     }
     
     _infix () {
@@ -72,9 +135,15 @@ class term extends expr {
         }
         this.id = id;
     }
+    
     getType() {
         return T_TERM;
     }
+    
+    isRecursive () {
+        return false;
+    }
+    
     getCanonical () {
         var escaped = this.id.replace( /"/, "\"" );
         return ( this.negated ? '-' : '' ) + '"' + escaped + '"';
@@ -99,6 +168,9 @@ class or extends expr {
     }
     getType () {
         return T_OR;
+    }
+    isRecursive () {
+        return false;
     }
 }
 
@@ -291,7 +363,10 @@ x.forEach( ( item ) => {
     //ps.debug = true;
     var q = ps.parse();
     console.log(
-        util.inspect( { q: q, canonical: q.getCanonical() }, { depth: 10, colors: true } )
+        util.inspect( [
+            q, q.getCanonical(),
+            q.refactor(), q.refactor().getCanonical()
+        ], { depth: 10, colors: true } )
     );
 } );
 
