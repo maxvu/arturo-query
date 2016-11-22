@@ -48,10 +48,14 @@ class expr {
         this._children.forEach( ( child ) => {
             canonical += child.getCanonical();
             if ( child !== this._children[ this._children.length - 1 ] )
-                canonical += ' ';
+                canonical += this._infix();
         } );
         canonical += ' )';
         return canonical;
+    }
+    
+    _infix () {
+        return ' ';
     }
 };
 
@@ -84,18 +88,8 @@ class disj extends expr {
     getType () {
         return T_DISJ;
     }
-    getCanonical () {
-        let canonical = '';
-        if ( this.negated )
-            canonical += 'NOT ';
-        canonical += '( ';
-        this._children.forEach( ( child ) => {
-            canonical += child.getCanonical();
-            if ( child !== this._children[ this._children.length - 1 ] )
-                canonical += ' OR ';
-        } );
-        canonical += ' )';
-        return canonical;
+    _infix () {
+        return ' OR ';
     }
 };
 
