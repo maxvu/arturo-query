@@ -1,23 +1,31 @@
 'use strict';
-var util = require( 'util' );
+var util = require( 'util' ); // TODO: get rid of
 
 const I_WHITESPACE = " \n\t\v\r"; // ASCII whitespace
 const I_NEGATION = "!-n";         // negators '!', '-' and 'not'
 const I_BAREINT = "\"'()|";       // characters that will interrupt bare terms
-const I_TERMPAREN = ')';
-const I_QUOTES = "\"'";
+const I_TERMPAREN = ')';          // character that will end a paren-bound expr
+const I_QUOTES = "\"'";           // characters that will open quoted terms
 
 const T_CONJ = 0;
 const T_DISJ = 1;
 const T_OR = 2;
 const T_TERM = 3;
 
+// A root class describing anything that can exist in a query.
+// This would've probably been better modeled using 'conj' and 'disj' as child
+// classes, but I found flipping the '_type' flag easier to implement.
 class expr {
 
     constructor ( subexprs ) {
         this._children = [];
         if ( subexprs instanceof Array )
             this._children = subexprs;
+        else if ( typeof subexprs !== 'undefined' && subexprs !== null )
+            if ( typeof subexprs === 'string' || subexprs instanceof String )
+                throw `expr constructor: ${subexprs} is not an array`;
+            else
+                throw `expr instantiated with non-array constructor argument`;
         this._negated = false;
         this._type = T_CONJ;
     }
@@ -34,6 +42,7 @@ class expr {
         return this._negated;
     }
     
+    // flip the _negated flag and apply De Morgan's
     negate () {
         if ( this.isDisjunction() ) {
             this.forEach( ( child ) => {
@@ -50,12 +59,25 @@ class expr {
         return this;
     }
     
+    // "can contain child elements"
     isRecursive () {
         return true;
     }
     
+    // number of children
     getSize () {
         return this._children.length;
+    }
+    
+    // number of distinct terms
+    getCardinality () {
+        let sum = 0;
+        this.forEach( ( child ) => {
+            if ( child.isRecursive() )
+                sum += child.getCardinality();
+            else
+                sum += 1;
+        } );
     }
     
     makeConjunction () {
@@ -96,22 +118,8 @@ class expr {
         return false;
     }
     
-    getCanonical ( constituent ) {
-        let canonical = '';
-        if ( this._negated )
-            canonical += this.isRecursive() ? '!' : '-';
-        if ( constituent )
-            canonical += '( ';
-        this.forEach( ( child ) => {
-            canonical += child.getCanonical( true );
-            if ( child !== this._children[ this._children.length - 1 ] )
-                canonical += this.getInfix();
-        } );
-        if ( constituent )
-            canonical += ' )';
-        return canonical;
-    }
-    
+    // splay terms into disjunctions-of-conjunctions while forcing negation
+    // operators to act on search terms instead of sets
     refactor () {
         
         // Distribute NOTs
@@ -152,13 +160,14 @@ class expr {
         
     }
     
+    // unnecessary, but cleans up a little bit
     forEach ( fn ) {
         this._children.forEach( fn );
         return this;
     }
     
+    // trim empty recursive items and superfluous nesting
     trim () {
-        // Trim empty recursive items and superfluous nesting
         this.forEach( ( child ) => {
             if ( !child.isRecursive() )
                 return;
@@ -174,6 +183,7 @@ class expr {
         return this;
     }
     
+    // not strictly necessary but preserves order
     replaceChildWith ( child, replacements ) {
         Array.prototype.splice.apply( this._children, [
             this._children.indexOf( child ),
@@ -181,6 +191,23 @@ class expr {
         ].concat(
             replacements
         ) );
+    }
+    
+    // canonical string representation
+    getCanonical ( constituent ) {
+        let canonical = '';
+        if ( this._negated )
+            canonical += this.isRecursive() ? '!' : '-';
+        if ( constituent )
+            canonical += '( ';
+        this.forEach( ( child ) => {
+            canonical += child.getCanonical( true );
+            if ( child !== this._children[ this._children.length - 1 ] )
+                canonical += this.getInfix();
+        } );
+        if ( constituent )
+            canonical += ' )';
+        return canonical;
     }
     
     getInfix () {
@@ -193,6 +220,7 @@ class expr {
     
 };
 
+// Leaf node describing a (possibly-negated search term)
 class term extends expr {
     
     constructor ( id ) {
@@ -225,6 +253,8 @@ class term extends expr {
     
 };
 
+// Stub representing disjunctive-term "OR" markers that are used only by the 
+// parser and should not appear in any result.
 class or extends expr {
     constructor () {
         super();
@@ -232,6 +262,7 @@ class or extends expr {
     }
 }
 
+// The meat and potatoes.
 class parser {
     constructor ( raw ) {
         this.raw = raw;
@@ -239,10 +270,12 @@ class parser {
         this.debug = false;
     }
     
+    // character at current index
     _c () {
         return this.raw[ this.i ];
     }
     
+    // have reached the end of the stream?
     _end () {
         return this.i >= this.raw.length;
     }
@@ -251,11 +284,13 @@ class parser {
         this.i += ( n || 1 );
     }
     
+    // dispatch a debug message to the console
     _dbg ( msg ) {
         if ( !this.debug ) return;
         console.log( `DEBUG: ${msg}` );
     }
     
+    // for debugging, print the intermediate state of the parser output
     _dump () {
         var marker = '';
         for ( var i = 0; i < this.i + 1; i++ )
@@ -265,11 +300,21 @@ class parser {
         this._dbg( ` ${marker}` );
     }
     
+    // set it off
     parse () {
         return this.ps_query();
     }
     
+    // parse an entire expression -- root level or paren-braced
     ps_query () {
+        /*
+            look ahead two symbols
+            if you encounter an OR, then drop the last item and add instead
+              a disjunction wrapping both it and the current item.
+            impose the following rules:
+              'or' terms cannot begin or end an expression
+              two 'or' terms cannot occur consecutively
+        */
         let buf = [];
         while ( !this._end() && this._c() != I_TERMPAREN ) {
             let b = this.ps_expr();
@@ -291,9 +336,10 @@ class parser {
             buf.push( new expr([ buf.pop(), c ]).makeDisjunction() );
             this.ps_ws();
         }        
-        return (new expr( buf )).makeConjunction();
+        return new expr( buf );
     }
     
+    // parse a (possibly-recursing) expression
     ps_expr () {
         // expr -> _ ( quoted | neg | paren | disj | term ) _
         this.ps_ws();
@@ -317,6 +363,7 @@ class parser {
         ps_ws();
     }
     
+    // skip whitespace
     ps_ws () {
         let begin = this.i;
         while ( I_WHITESPACE.indexOf( this._c() ) !== -1 )
@@ -324,6 +371,7 @@ class parser {
         return begin === this.i;
     }
     
+    // parse a quoted term
     ps_quoted () {
         this._dbg( 'quoted term' );
         let open = this.i;
@@ -336,6 +384,7 @@ class parser {
         return new term( this.raw.slice( open + 1, this.i - 1 ) );
     }
     
+    // parse a negated expression (and toggle its flag)
     ps_neg () {
         this._dbg( 'negated term' );
         if ( this._c() === '!' || this._c() === '-' )
@@ -356,6 +405,7 @@ class parser {
             
     }
     
+    // parse a recursing, parenthetical term
     ps_paren () {
         this._dbg( 'paranthetical' );
         this._step();
@@ -369,6 +419,7 @@ class parser {
         return e instanceof expr ? e : null;
     }
     
+    // parse an unquoted term
     ps_bare () {
         this._dbg( 'bare term' );
         let start = this.i;
@@ -384,6 +435,7 @@ class parser {
         return new term( this.raw.slice( start, this.i ) );
     }
     
+    // is an or marker coming next?
     peek_or () {
         let begin = this.i;
         let ans = this.ps_or( true );
@@ -391,6 +443,7 @@ class parser {
         return ans;
     }
     
+    // parse an or marker
     ps_or ( suppress_dbg ) {
         if ( !suppress_dbg )
             this._dbg( 'OR marker' );
