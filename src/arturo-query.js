@@ -120,6 +120,7 @@ class expr {
     
     // splay terms into disjunctions-of-conjunctions while forcing negation
     // operators to act on search terms instead of sets
+    // should be idempotent
     refactor () {
         
         // Distribute NOTs
@@ -220,7 +221,7 @@ class expr {
     
 };
 
-// Leaf node describing a (possibly-negated search term)
+// Leaf node describing a (possibly-negated) search term
 class term extends expr {
     
     constructor ( id ) {
