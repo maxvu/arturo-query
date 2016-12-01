@@ -1,5 +1,4 @@
 'use strict';
-var util = require( 'util' ); // TODO: get rid of
 
 const I_WHITESPACE = " \n\t\v\r"; // ASCII whitespace
 const I_NEGATION = "!-n";         // negators '!', '-' and 'not'
@@ -460,28 +459,7 @@ class parser {
     }
 };
 
-// TODO: get rid of
-var x = [
-//    'hello world',
-//    'another test',
-//    'austin "danger" powers',
-//    'George Herman"Babe"Ruth',
-//    "  Ivan('the terrible')IV  ",
-//    'John ( not McDermott ) -( !"Big Bad John" -England)'
-      "Allan or 'White Lightening' | Donald",
-    "!!! ( monkeys bears boars )",
-   "  !( christmas OR thanksgiving OR halloween )"
-];
-x.forEach( ( item ) => {
-    let ps = (new parser( item ));
-    //ps.debug = true;
-    var q = ps.parse();
-    console.log(
-        util.inspect( [
-            q,
-            q.getCanonical(),
-            q.refactor(),
-            q.refactor().getCanonical()
-        ], { depth: 10, colors: true } )
-    );
-} );
+module.exports = ( raw_query ) => {
+    return (new parser( raw_query )).parse().refactor();
+};
+
