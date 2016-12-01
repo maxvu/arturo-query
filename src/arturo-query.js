@@ -13,164 +13,222 @@ const T_OR = 2;
 const T_TERM = 3;
 
 class expr {
+
     constructor ( subexprs ) {
         this._children = [];
         if ( subexprs instanceof Array )
             this._children = subexprs;
-        this.negated = false;
+        this._negated = false;
+        this._type = T_CONJ;
     }
     
-    negate () {
-        this.negated = !this.negated;
-        return this;
+    getChildren () {
+        return this._children;
     }
     
     getType () {
-        return T_CONJ;
+        return this._type;
     }
     
-    getSize () {
-        let totalSize = 0;
-        this._children.forEach( ( child ) => {
-            if ( child instanceof expr ) {
-                totalSize += child.getSize();
-            } else if ( child instanceof term ) {
-                totalSize++;
-            }
-        } );
-        return totalSize;
+    isNegated () {
+        return this._negated;
+    }
+    
+    negate () {
+        if ( this.isDisjunction() ) {
+            this.forEach( ( child ) => {
+                child = child.negate();
+            } );
+            this.makeConjunction();
+        } else if ( this.isConjunction() ) {
+            this.forEach( ( child ) => {
+                child = child.negate();
+            } );
+            this.makeDisjunction();
+        }
+        this._negated = !this._negated;
+        return this;
     }
     
     isRecursive () {
         return true;
     }
     
-    isNegated () {
-        return this.negated ? true : false;
+    getSize () {
+        return this._children.length;
     }
     
-    getCanonical () {
-        let canonical = '';
-        if ( this.negated )
-            canonical += '!';
-        canonical += '( ';
-        this._children.forEach( ( child ) => {
-            canonical += child.getCanonical();
-            if ( child !== this._children[ this._children.length - 1 ] )
-                canonical += this._infix();
+    makeConjunction () {
+        this._type = T_CONJ;
+        return this;
+    }
+    
+    makeDisjunction () {
+        this._type = T_DISJ;
+        return this;
+    }
+    
+    isConjunction () {
+        return this._type === T_CONJ;
+    }
+    
+    isDisjunction () {
+        return this._type === T_DISJ;
+    }
+    
+    hasConjunctions () {
+        if ( this._type === T_CONJ )
+            return true;
+        this.forEach( ( child ) => {
+            if ( child.hasConjunctions() )
+                return true;
         } );
-        canonical += ' )';
+        return false;
+    }
+    
+    hasDisjunctions () {
+        if ( this._type === T_DISJ )
+            return true;
+        this.forEach( ( child ) => {
+            if ( child.hasDisjunctions() )
+                return true;
+        } );
+        return false;
+    }
+    
+    getCanonical ( constituent ) {
+        let canonical = '';
+        if ( this._negated )
+            canonical += this.isRecursive() ? '!' : '-';
+        if ( constituent )
+            canonical += '( ';
+        this.forEach( ( child ) => {
+            canonical += child.getCanonical( true );
+            if ( child !== this._children[ this._children.length - 1 ] )
+                canonical += this.getInfix();
+        } );
+        if ( constituent )
+            canonical += ' )';
         return canonical;
     }
     
     refactor () {
-        let clone = new expr;
-        Object.assign( clone, this );
         
-        // AND and OR have the distributive property -- flatten those out
-        let flattened = [];
-        clone._children.forEach( ( child ) => {
-            if ( child.getType() === this.getType() ) {
-                child._children.forEach( ( grandchild ) => {
-                    flattened.push(
-                        child.negated ? grandchild.negate() : grandchild
-                    );
-                } );
-            } else {
-                flattened.push( child );
-            }
-        } );
-        clone._children = flattened;
-        
-        // expressions can be replaced with their only child
-        flattened = [];
-        clone._children.forEach( ( child ) => {
-            if ( child._children.length === 1 ) {
-                flattened.push(
-                    child.isNegated()
-                        ? child._children[ 0 ].negate()
-                        : child._children[ 0 ]
-                );
-            } else {
-                flattened.push( child );
-            }
-        } );
-        clone._children = flattened;
-        
-        // top-down order
-        clone._children.forEach( ( child ) => {
-            child.refactor();
+        // Distribute NOTs
+        this.forEach( ( child ) => {
+            if ( child.isRecursive() && child.isNegated() )
+                child.negate();
         } );
         
-        return clone;
+        // Distribute ANDs
+        if ( this.isConjunction() ) {
+            this.forEach( ( child ) => {
+                if ( child.isConjunction() && !child.hasDisjunctions() ) {
+                    if ( child.isNegated() )
+                        child.negate();
+                    this.replaceChildWith( child, child._children );
+                }
+            } );
+        }
+        
+        // Distribute ORs
+        if ( this.isDisjunction() ) {
+            this.forEach( ( child ) => {
+                if ( child.isDisjunction() && !child.hasConjunctions() ) {
+                    if ( child.isNegated() )
+                        child.negate();
+                    this.replaceChildWith( child, child._children );
+                }
+            } );
+        }
+        
+        // Recurse top-down
+        this.forEach( ( child ) => {
+            child = child.refactor();
+        } );
+        
+        // Topmost-layer trim
+        return this.trim();
+        
     }
     
-    satisfies ( condition ) {
-        if ( !condition( this ) )
-            return;
-        var toggle = true;
-        this._children.forEach( ( child ) => {
-            if ( !condition( child ) )
-                toggle = false;
+    forEach ( fn ) {
+        this._children.forEach( fn );
+        return this;
+    }
+    
+    trim () {
+        // Trim empty recursive items and superfluous nesting
+        this.forEach( ( child ) => {
+            if ( !child.isRecursive() )
                 return;
+            let idx = this._children.indexOf( child );
+            if ( child.getSize() === 0 )
+                this._children.splice( idx, 1 );
+            else if ( child.getSize() === 1 ) {
+                this._children[ idx ] = child._children[ 0 ];
+            }
         } );
-        return toggle;
+        if ( this.getSize() === 1 && !this.isNegated() )
+            return this._children[ 0 ];
+        return this;
     }
     
-    _infix () {
-        return ' ';
+    replaceChildWith ( child, replacements ) {
+        Array.prototype.splice.apply( this._children, [
+            this._children.indexOf( child ),
+            1
+        ].concat(
+            replacements
+        ) );
     }
+    
+    getInfix () {
+        switch ( this._type ) {
+            case T_CONJ: return ' '; break;
+            case T_DISJ: return ' OR '; break;
+        }
+        return ' . ';
+    }
+    
 };
 
 class term extends expr {
+    
     constructor ( id ) {
-        super([]);
-        if (
-            ! typeof id === 'string' &&
-            ! id instanceof String
-        ) {
-            throw `invalid term: '${id}'`;
+        super();
+        if ( typeof id !== 'string' && !( id instanceof String ) ) {
+            throw `invalid, non-string term id ${id}`;
         } else if ( id.length === 0 ) {
             throw 'invalid, empty term';
         }
-        this.id = id;
+        this._id = id;
+        this._type = T_TERM;
     }
     
-    getType() {
-        return T_TERM;
+    getId () {
+        return this._id;
+    }
+    
+    getCanonical () {
+        var escaped = this._id.replace( /"/, "\"" );
+        return ( this._negated ? '-' : '' ) + '"' + escaped + '"';
     }
     
     isRecursive () {
         return false;
     }
     
-    getCanonical () {
-        var escaped = this.id.replace( /"/, "\"" );
-        return ( this.negated ? '-' : '' ) + '"' + escaped + '"';
+    refactor () {
+        return this;
     }
-};
-
-class disj extends expr {
-    constructor ( subexprs ) {
-        super( subexprs );
-    }
-    getType () {
-        return T_DISJ;
-    }
-    _infix () {
-        return ' OR ';
-    }
+    
 };
 
 class or extends expr {
     constructor () {
         super();
-    }
-    getType () {
-        return T_OR;
-    }
-    isRecursive () {
-        return false;
+        this._type = T_OR;
     }
 }
 
@@ -230,10 +288,10 @@ class parser {
                 throw 'dangling or (end of query)';
             if ( c.getType() === T_OR )
                 throw 'two consecutive or\'s';
-            buf.push( new disj([ buf.pop(), c ]) );
+            buf.push( new expr([ buf.pop(), c ]).makeDisjunction() );
             this.ps_ws();
-        }
-        return new expr( buf );
+        }        
+        return (new expr( buf )).makeConjunction();
     }
     
     ps_expr () {
@@ -275,9 +333,7 @@ class parser {
         if ( this._c() !== this.raw[ open ] )
         throw `unterminated quote (${this.raw[ open ]})`;
         this._step();
-        return new expr([
-            new term( this.raw.slice( open + 1, this.i - 1 ) )
-        ]);
+        return new term( this.raw.slice( open + 1, this.i - 1 ) );
     }
     
     ps_neg () {
@@ -287,9 +343,13 @@ class parser {
         else if ( this.raw.slice( this.i, this.i + 3 ).toLowerCase() === 'not' )
             this._step( 3 );
         try {
-            return new expr([ this.ps_expr().negate() ]);
+            // The negate() term does the refactor() folding later --
+            // it's enough to just tickle the flag for now.
+            let e = this.ps_expr();
+            e._negated = true;
+            return e;
         } catch ( e ) {
-            throw typeof e === 'string'
+            throw ( typeof e === 'string' || e instanceof String )
                 ? 'dangling not' :
                 `dangling not (${e})`;
         }
@@ -321,9 +381,7 @@ class parser {
             this._step();
         }
         this._dump();
-        return new expr([
-            new term( this.raw.slice( start, this.i ) )
-        ]);
+        return new term( this.raw.slice( start, this.i ) );
     }
     
     peek_or () {
@@ -350,13 +408,15 @@ class parser {
 
 // TODO: get rid of
 var x = [
-    'hello world',
-    'another test',
-    'austin "danger" powers',
-    'George Herman"Babe"Ruth',
-    "  Ivan('the terrible')IV  ",
-    'John ( not McDermott ) ( !"Big Bad John" -England)',
-    "Allan or 'White Lightening' or Donald"
+//    'hello world',
+//    'another test',
+//    'austin "danger" powers',
+//    'George Herman"Babe"Ruth',
+//    "  Ivan('the terrible')IV  ",
+//    'John ( not McDermott ) -( !"Big Bad John" -England)'
+      "Allan or 'White Lightening' | Donald",
+    "!!! ( monkeys bears boars )",
+   "  !( christmas OR thanksgiving OR halloween )"
 ];
 x.forEach( ( item ) => {
     let ps = (new parser( item ));
@@ -364,9 +424,10 @@ x.forEach( ( item ) => {
     var q = ps.parse();
     console.log(
         util.inspect( [
-            q, q.getCanonical(),
-            q.refactor(), q.refactor().getCanonical()
+            q,
+            q.getCanonical(),
+            q.refactor(),
+            q.refactor().getCanonical()
         ], { depth: 10, colors: true } )
     );
 } );
-
