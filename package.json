@@ -1,0 +1,17 @@
+{
+    "name" : "arturo-query",
+    "description" : "A boolean search query parser",
+    "repository" : {
+        "type" : "git",
+        "url" : "https://github.com/maxvu/arturo-query"
+    },
+    "author" : "Max Vu",
+    "keywords" : [
+        "arturo",
+        "query",
+        "boolean",
+        "search",
+        "full-text"
+    ],
+    "license" : "MIT"
+}
