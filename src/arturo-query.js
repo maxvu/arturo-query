@@ -22,9 +22,9 @@ class expr {
             this._children = subexprs;
         else if ( typeof subexprs !== 'undefined' && subexprs !== null )
             if ( typeof subexprs === 'string' || subexprs instanceof String )
-                throw `expr constructor: ${subexprs} is not an array`;
+                throw new Error( `expr constructor: ${subexprs} is not an array` );
             else
-                throw `expr instantiated with non-array constructor argument`;
+                throw new Error( `expr instantiated with non-array constructor argument` );
         this._negated = false;
         this._valid = true;
         this._type = T_CONJ;
@@ -241,9 +241,9 @@ class term extends expr {
     constructor ( id ) {
         super();
         if ( typeof id !== 'string' && !( id instanceof String ) ) {
-            throw `invalid, non-string term id ${id}`;
+            throw new Error( `invalid, non-string term id ${id}` );
         } else if ( id.length === 0 ) {
-            throw 'invalid, empty term';
+            throw new Error( 'invalid, empty term' );
         }
         this._id = id;
         this._type = T_TERM;
@@ -339,15 +339,15 @@ class parser {
                 continue;
             }
             if ( buf.length === 0 )
-                throw 'dangling or (start of query)';
+                throw new Error( 'dangling or (start of query)' );
             if ( buf[ buf.length - 1 ].getType() === T_OR )
-                throw 'two consecutive or\'s';
+                throw new Error( 'two consecutive or\'s' );
             let pos_b = this.i;
             let c = this.ps_expr();
             if ( c === null )
-                throw 'dangling or (end of query)';
+                throw new Error( 'dangling or (end of query)' );
             if ( c.getType() === T_OR )
-                throw 'two consecutive or\'s';
+                throw new Error( 'two consecutive or\'s' );
             buf.push( new expr([ buf.pop(), c ]).makeDisjunction() );
             this.ps_ws();
         }        
@@ -394,7 +394,7 @@ class parser {
         while ( !this._end() && ( this._c() !== this.raw[ open ] ) )
             this._step();
         if ( this._c() !== this.raw[ open ] )
-        throw `unterminated quote (${this.raw[ open ]})`;
+        throw new Error( `unterminated quote (${this.raw[ open ]})` );
         this._step();
         return new term( this.raw.slice( open + 1, this.i - 1 ) );
     }
@@ -414,8 +414,8 @@ class parser {
             return e;
         } catch ( e ) {
             throw ( typeof e === 'string' || e instanceof String )
-                ? 'dangling not' :
-                `dangling not (${e})`;
+                ? new Error( 'dangling not' ) :
+                new Error( `dangling not (${e})` );
         }
             
     }
@@ -428,7 +428,7 @@ class parser {
         let e = this.ps_query();
         this.ps_ws();
         if ( this._c() !== I_TERMPAREN )
-            throw 'unterminted paranthetical';
+            throw new Error( 'unterminted paranthetical' );
         this._dbg( 'paranthetical, end' );
         this._step();
         return e instanceof expr ? e : null;

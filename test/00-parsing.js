@@ -81,6 +81,12 @@ describe( 'parser', function () {
             );
         } );
         
+        it( 'should not escape', function () {
+            assert.throws( () => {
+                parse( " \" " );
+            } );
+        } );
+        
     } );
     
     describe( 'parenthetical expressions', function () {
