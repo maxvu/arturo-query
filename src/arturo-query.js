@@ -2,6 +2,8 @@
 
 const I_WHITESPACE = " \n\t\v\r"; // ASCII whitespace
 const I_NEGATION = "!-n";         // negators '!', '-' and 'not'
+const I_NOT = 'not';              // literal, spelled-out "not"
+const I_OR = 'or';                // literal, spelled-out "or"
 const I_BAREINT = "\"'()|";       // characters that will interrupt bare terms
 const I_TERMPAREN = ')';          // character that will end a paren-bound expr
 const I_QUOTES = "\"'";           // characters that will open quoted terms
@@ -323,12 +325,13 @@ class parser {
     // parse an entire expression -- root level or paren-braced
     ps_query () {
         /*
-            look ahead two symbols
-            if you encounter an OR, then drop the last item and add instead
-              a disjunction wrapping both it and the current item.
-            impose the following rules:
-              'or' terms cannot begin or end an expression
-              two 'or' terms cannot occur consecutively
+            offload 'OR' parsing to a kind of higher-level symbol:
+                look ahead two symbols
+                if you encounter an OR, then drop the last item and add instead
+                  a disjunction wrapping both it and the current item.
+                impose the following rules:
+                  'or' terms cannot begin or end an expression
+                  two 'or' terms cannot occur consecutively
         */
         let buf = [];
         while ( !this._end() && this._c() != I_TERMPAREN ) {
@@ -402,10 +405,20 @@ class parser {
     // parse a negated expression (and toggle its flag)
     ps_neg () {
         this._dbg( 'negated term' );
-        if ( this._c() === '!' || this._c() === '-' )
+        // get the negating term
+        if ( this._c() === '!' || this._c() === '-' ) {
             this._step();
-        else if ( this.raw.slice( this.i, this.i + 3 ).toLowerCase() === 'not' )
-            this._step( 3 );
+        } else {
+            try {
+                // don't get confused with a term that begins with NOT...
+                let term = this.ps_bare();
+                if ( term.getId().toLowerCase() !== I_NOT )
+                    return term;
+            } catch ( e ) {
+                // ...
+            }
+        }
+        // get the expression to be negated
         try {
             // The negate() term does the refactor() folding later --
             // it's enough to just tickle the flag for now.
@@ -437,6 +450,7 @@ class parser {
     // parse an unquoted term
     ps_bare () {
         this._dbg( 'bare term' );
+        this.ps_ws();
         let start = this.i;
         while (
             !this._end() &&
@@ -447,29 +461,35 @@ class parser {
             this._step();
         }
         this._dump();
+        let substr = this.raw.slice( start, this.i );
+        if ( substr.toLowerCase() === I_OR )
+            return new or;
         return new term( this.raw.slice( start, this.i ) );
     }
     
     // is an or marker coming next?
     peek_or () {
+        if ( this._c() === '|' )
+            return true;
         let begin = this.i;
-        let ans = this.ps_or( true );
-        this.i = begin;
-        return ans;
+        try {
+            let term = this.ps_bare();
+            this.i = begin;
+            return term instanceof or;
+        } catch ( e ) {
+            return false;
+        }
     }
     
     // parse an or marker
+    // cannot be called without first checking with peek_or()
     ps_or ( suppress_dbg ) {
         if ( !suppress_dbg )
             this._dbg( 'OR marker' );
-        if ( this.raw.substr( this.i, 2 ).toLowerCase() === 'or' ) {
-            this._step( 2 );
-            return true;
-        } else if ( this.raw[ this.i ] === '|' ) {
+        if ( this.raw[ this.i ] === '|' ) {
             this._step();
-            return true;
         } else {
-            return false;
+            this.ps_bare();
         }
     }
 };
