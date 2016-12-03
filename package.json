@@ -18,6 +18,7 @@
         "mocha" : "3.2.0"
     },
     "scripts" : {
-        "test" : "mocha"
+        "test" : "mocha --check-leaks --sort",
+        "debug" : "mocha --check-leaks --sort --debug-brk"
     }
 }

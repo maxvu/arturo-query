@@ -1,5 +1,6 @@
 var assert = require( 'assert' );
-var parse = require( '../src/arturo-query.js' );
+var parse = require( '../src/arturo-query.js' ).parse;
+var parse_safe = require( '../src/arturo-query.js' ).parse_safe;
 
 describe( 'parser', function () {
 
@@ -14,15 +15,16 @@ describe( 'parser', function () {
         
         it( 'should ignore whitespace', function () {
             assert.equal(
-                parse( '     hello-world     ' ).getCanonical(),
-                parse( 'hello-world' ).getCanonical()
+                parse( '     hello world     ' ).getCanonical(),
+                parse( 'hello world' ).getCanonical()
             );
         } );
         
-        it( 'should be negated by both "!" and "-"', function () {
+        it( 'should be negated by all three operators', function () {
             assert.equal(
                 parse( '-smoking' ).getCanonical(),
-                parse( '!smoking' ).getCanonical()
+                parse( '!smoking' ).getCanonical(),
+                parse( 'not smoking' ).getCanonical()
             );
             assert.notEqual(
                 parse( 'smoking' ).getCanonical(),
@@ -65,10 +67,28 @@ describe( 'parser', function () {
     
     describe( 'quoted term', function () {
         
-        it( 'should interrupt itself', function () {
+        it( 'should not require whitespace', function () {
             assert.equal(
                 parse( '"hello""world"' ).getCanonical(),
                 parse( 'hello world' ).getCanonical()
+            );
+        } );
+        
+        it( 'should be triggered by both single- and double- quotes', function () {
+            assert.equal(
+                parse( '"hello""world"' ).getCanonical(),
+                parse( '\'hello\'\'world\'' ).getCanonical()
+            );
+        } );
+        
+    } );
+    
+    describe( 'parenthetical expressions', function () {
+        
+        it( 'nest', function () {
+            assert.equal(
+                parse( '()((()())())()' ).getCanonical(),
+                parse( '' ).getCanonical()
             );
         } );
         

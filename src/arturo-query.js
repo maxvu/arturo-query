@@ -26,6 +26,7 @@ class expr {
             else
                 throw `expr instantiated with non-array constructor argument`;
         this._negated = false;
+        this._valid = true;
         this._type = T_CONJ;
     }
     
@@ -66,6 +67,20 @@ class expr {
     // number of children
     getSize () {
         return this._children.length;
+    }
+    
+    isValid () {
+        return this._valid;
+    }
+    
+    getError () {
+        return this._error;
+    }
+    
+    invalidate ( msg ) {
+        this._valid = false;
+        this._error = msg;
+        return this;
     }
     
     // number of distinct terms
@@ -376,7 +391,7 @@ class parser {
         this._dbg( 'quoted term' );
         let open = this.i;
         this._step();
-        while ( !this._end() && this._c() !== this.raw[ open ] )
+        while ( !this._end() && ( this._c() !== this.raw[ open ] ) )
             this._step();
         if ( this._c() !== this.raw[ open ] )
         throw `unterminated quote (${this.raw[ open ]})`;
@@ -459,7 +474,17 @@ class parser {
     }
 };
 
-module.exports = ( raw_query ) => {
-    return (new parser( raw_query )).parse().refactor();
+module.exports = {
+    'parse' : ( raw_query ) => {
+        return (new parser( raw_query )).parse().refactor();
+    },
+    'parse_safe' : ( raw_query ) => {
+        try {
+            return (new parser( raw_query )).parse().refactor();
+        } catch ( e ) {
+            return (new expr).invalidate( e );
+        }
+    },
+    parser : parser
 };
 
