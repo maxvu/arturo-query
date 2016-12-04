@@ -6,6 +6,7 @@ const T_TERM = 3;
 
 class expr {
     
+    // can be empty or with constituent expr parts
     constructor ( subexprs ) {
         this._children = [];
         if ( subexprs instanceof Array && subexprs.some( ( item ) => {
@@ -24,6 +25,7 @@ class expr {
         return this._negated;
     }
     
+    // for immutability
     getChildren () {
         return this._children;
     }
@@ -105,8 +107,14 @@ class conj extends expr {
     }
     
     negate () {
+        if ( this.getChildren().length === 0 )
+            return this;
+        if ( this.getChildren().length === 1 ) {
+            this._children[ 0 ].negate();
+            return this;
+        }
         return new disj(
-            this.getChildren.map( ( x ) => {
+            this.getChildren().map( ( x ) => {
                 return x.negate();
             } )
         )
@@ -126,6 +134,12 @@ class disj extends expr {
     }
     
     negate () {
+        if ( this.getChildren().length === 0 )
+            return this;
+        if ( this.getChildren().length === 1 ) {
+            this._children[ 0 ].negate();
+            return this;
+        }
         return new conj(
             this.getChildren().map( ( x ) => {
                 return x.negate();
@@ -140,3 +154,4 @@ module.exports = {
     conj : conj,
     disj : disj
 };
+// ...expr intentionally left out

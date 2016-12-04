@@ -104,4 +104,37 @@ describe( 'conj', function () {
         
     } );
     
+    describe( 'negate()', function () {
+    
+        it( 'returns self when size = 0', function () {
+            let c = ( new expr.conj([]) ).negate();
+            ( c instanceof expr.conj ).should.be.true();
+            ( c.isNegated() ).should.be.false();
+        } );
+        
+        it( 'negates child when size = 1', function () {
+            let c = ( new expr.conj([
+                new expr.term( 'b' )
+            ]) ).negate();
+            ( c instanceof expr.conj ).should.be.true();
+            ( c.isNegated() ).should.be.false();
+            ( c.getChildren().length ).should.equal( 1 );
+            ( c.getChildren()[ 0 ].isNegated() ).should.be.true();
+        } );
+        
+        it( 'DeMorgans to a disj when size > 1', function () {
+            let c = ( new expr.conj([
+                new expr.term( 'c' ),
+                new expr.term( 'd' )
+            ]) ).negate();
+            ( c instanceof expr.conj ).should.be.false();
+            ( c instanceof expr.disj ).should.be.true();
+            ( c.isNegated() ).should.be.false();
+            ( c.getChildren().length ).should.equal( 2 );
+            ( c.getChildren()[ 0 ].isNegated() ).should.be.true();
+            ( c.getChildren()[ 1 ].isNegated() ).should.be.true();
+        } );
+        
+    } );
+    
 } );
