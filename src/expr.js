@@ -30,10 +30,11 @@ class expr {
         return this._children;
     }
     
+    // number of terms (although perhaps not distinct)
     getTermCount () {
         return this._children.reduce( ( acc, val ) => {
             return acc + val.getTermCount();
-        }, 0 ) + ( this._type === T_TERM ) ? 1 : 0;
+        }, 0 ) + ( this._type === T_TERM ? 1 : 0 );
     }
     
     forEach ( fn ) {
@@ -137,7 +138,7 @@ class disj extends expr {
         if ( this.getChildren().length === 0 )
             return this;
         if ( this.getChildren().length === 1 ) {
-            this._children[ 0 ].negate();
+            this._children[ 0 ] = this._children[ 0 ].negate();
             return this;
         }
         return new conj(

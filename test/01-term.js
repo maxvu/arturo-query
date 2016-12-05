@@ -223,6 +223,29 @@ describe( 'expr', function () {
         it( 'should be zero for empty expressions', function () {
             (new conj([])).getTermCount().should.equal( 0 );
         } );
+        
+        it( 'should equal term count for flat expressions', function () {
+            (new conj([
+                new term( 'j' ),
+                new term( 'k' ),
+                new term( 'l' )
+            ])).getTermCount().should.equal( 3 );
+        } );
+        
+        it( 'should properly sum arbitrarily-nested terms', function () {
+            (new conj([
+                new term( 'm' ),
+                new conj([
+                    new term( 'n' ),
+                    new conj([
+                        new conj([]),
+                        new conj([
+                            new term( 'o' )
+                        ])
+                    ])
+                ]),
+            ])).getTermCount().should.equal( 3 );
+        } );
 
     } );
 
