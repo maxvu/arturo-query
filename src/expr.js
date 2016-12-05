@@ -61,11 +61,9 @@ class expr {
             else if ( child._children.length === 1 )
                 this._children[ idx ] = child._children[ 0 ];
         } );
-        if ( this.getChildren().length === 1 ) {
-            if ( this.isNegated() )
-                return this._children[ 0 ].negate();
+        if ( this.getChildren().length === 1 )
             return this._children[ 0 ];
-        }
+        return this;
     }
     
     // fold down into a canonical form: ORs topmost and negation pushed to terms
@@ -77,15 +75,15 @@ class expr {
         for ( var i = 0; i < this._children.length ; i++ )
             this._children[ i ] = this._children[ i ].reduce();
         
-        // promote like expressions
+        // distribute NOTs to the terms
+        
         if ( this.isRecursive() ) {
+            // promote like expressions
             for ( var i = 0; i < this._children.length; i++ ) {
                 if ( this._children[ i ]._type === this._type ) {
                      Array.prototype.splice.apply( this._children, [
                         i, 1
                      ].concat( this._children[ i ]._children ) );
-                        
-                        
                 }
             }        
         }
@@ -98,10 +96,11 @@ class expr {
             let conjunctives = this._children.filter( ( child ) => {
                 return child._type !== T_DISJ;
             } );
-            let product = cartesian( disjunctives.map( ( cj ) => {
-                return cj._children;
-            } ) );
-            if ( product.length ) {
+            let combinators = disjunctives.map( ( dj ) => {
+                return dj._children;
+            } );
+            if ( combinators.length ) { // open bug on 'cartesian'
+                let product = cartesian( combinators );
                 return new disj( product.map( ( combination ) => {
                     return new conj( conjunctives.concat( combination ) );
                 } ) );

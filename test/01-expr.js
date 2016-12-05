@@ -98,6 +98,11 @@ describe( 'conj', function () {
             ]); } ).should.throw();
         } );
         
+        it( 'should die with non-Array constructor argument', function () {
+            ( () => { new conj( 1 ); } ).should.throw();
+            ( () => { new conj( new String ); } ).should.throw();
+        } );
+        
     } );
     
     describe( 'isRecursive()', function () {
@@ -273,12 +278,12 @@ describe( 'expr', function () {
         } );
         
         it( 'print "topmost" expressions', function () {
-            (new conj([
+            (new disj([
                 new term( 'dog' ),
                 (new conj([
                     new term( 'eagle' )
                 ]))
-            ])).toString( true ).should.equal( 'dog (eagle)' );
+            ])).toString( true ).should.equal( 'dog OR (eagle)' );
             (new conj([
                 new term( 'dog' ),
                 (new conj([
@@ -329,7 +334,43 @@ describe( 'expr', function () {
                         new term( 'bass' ),
                     ])
                 ])
-            )
+            );
+            (new conj([
+                new term( 'panda' ),
+                new disj([
+                    new term( 'impala' ),
+                ])
+            ]).reduce()).should.deepEqual(
+                new conj([
+                    new term( 'panda' ),
+                    new term( 'impala' ),
+                ])
+            );
+            
+            (new conj([
+                new term( 'lynx' ),
+                new disj([
+                    new term( 'manatee' ),
+                    new term( 'mole' ),
+                    new term( 'meerkat' ),
+                ])
+            ]).reduce()).should.deepEqual(
+                new disj([
+                    new conj([
+                        new term( 'lynx' ),
+                        new term( 'manatee' ),
+                    ]),
+                    new conj([
+                        new term( 'lynx' ),
+                        new term( 'mole' ),
+                    ]),
+                    new conj([
+                        new term( 'lynx' ),
+                        new term( 'meerkat' ),
+                    ]),
+                ])
+            );
+            
         } );
     
     } );
