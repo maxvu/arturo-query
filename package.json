@@ -1,25 +1,28 @@
 {
-    "name" : "arturo-query",
-    "description" : "A boolean search query parser",
-    "repository" : {
-        "type" : "git",
-        "url" : "https://github.com/maxvu/arturo-query"
-    },
-    "author" : "Max Vu",
-    "keywords" : [
-        "arturo",
-        "query",
-        "boolean",
-        "search",
-        "full-text"
-    ],
-    "license" : "MIT",
-    "devDependencies" : {
-        "mocha"  : "3.2.0",
-        "should" : "11.1.1"
-    },
-    "scripts" : {
-        "test" : "mocha --check-leaks --sort",
-        "debug" : "mocha --check-leaks --sort --debug-brk"
-    }
+  "name": "arturo-query",
+  "description": "A boolean search query parser",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/maxvu/arturo-query"
+  },
+  "author": "Max Vu",
+  "keywords": [
+    "arturo",
+    "query",
+    "boolean",
+    "search",
+    "full-text"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "mocha": "3.2.0",
+    "should": "11.1.1"
+  },
+  "scripts": {
+    "test": "mocha --check-leaks --sort",
+    "debug": "mocha --check-leaks --sort --debug-brk"
+  },
+  "dependencies": {
+    "cartesian": "^1.0.0"
+  }
 }
