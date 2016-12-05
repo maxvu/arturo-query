@@ -1,4 +1,5 @@
 'use strict';
+var cartesian = require( 'cartesian' );
 
 // Enumerable for expr types
 const T_CONJ = 1;
@@ -49,14 +50,15 @@ class expr {
         return this;
     }
     
+    // remove empty items and superfluous nesting
     trim () {
         this.forEach( ( child ) => {
             if ( !child.isRecursive() )
                 return;
             let idx = this.getChildren().indexOf( child );
-            if ( child.getSize() === 0 )
+            if ( child._children.length === 0 )
                 this._children.splice( idx, 1 );
-            else if ( child.getSize() === 1 )
+            else if ( child._children.length === 1 )
                 this._children[ idx ] = child._children[ 0 ];
         } );
         if ( this.getChildren().length === 1 ) {
@@ -64,6 +66,49 @@ class expr {
                 return this._children[ 0 ].negate();
             return this._children[ 0 ];
         }
+    }
+    
+    // fold down into a canonical form: ORs topmost and negation pushed to terms
+    reduce () {
+        
+        this.trim();
+        
+        // bottom-up recurse
+        for ( var i = 0; i < this._children.length ; i++ )
+            this._children[ i ] = this._children[ i ].reduce();
+        
+        // promote like expressions
+        if ( this.isRecursive() ) {
+            for ( var i = 0; i < this._children.length; i++ ) {
+                if ( this._children[ i ]._type === this._type ) {
+                     Array.prototype.splice.apply( this._children, [
+                        i, 1
+                     ].concat( this._children[ i ]._children ) );
+                        
+                        
+                }
+            }        
+        }
+        
+        // distribute disjunctions
+        if ( this._type === T_CONJ && this._children.length > 1 ) {
+            let disjunctives = this._children.filter( ( child ) => {
+                return child._type === T_DISJ;
+            } );
+            let conjunctives = this._children.filter( ( child ) => {
+                return child._type !== T_DISJ;
+            } );
+            let product = cartesian( disjunctives.map( ( cj ) => {
+                return cj._children;
+            } ) );
+            if ( product.length ) {
+                return new disj( product.map( ( combination ) => {
+                    return new conj( conjunctives.concat( combination ) );
+                } ) );
+            }
+        }
+
+        return this;
     }
     
 };
@@ -122,7 +167,7 @@ class conj extends expr {
         if ( this.getChildren().length === 0 )
             return this;
         if ( this.getChildren().length === 1 ) {
-            this._children[ 0 ].negate();
+            this._children[ 0 ] = this._children[ 0 ].negate();
             return this;
         }
         return new disj(
