@@ -5,6 +5,7 @@ var cartesian = require( 'cartesian' );
 const T_CONJ = 1;
 const T_DISJ = 2;
 const T_TERM = 3;
+const T_ORMK = 5;
 
 // How to print, for toString()
 const C_TERM_NEGATE = '-';
@@ -227,9 +228,25 @@ class disj extends expr {
 
 };
 
+// Stub representing disjunctive-term "OR" markers that are used only by the 
+// parser and should not appear in any result.
+class ormk extends expr {
+    constructor () {
+        super();
+        this._type = T_ORMK;
+    }
+}
+
 module.exports = {
     term : term,
     conj : conj,
-    disj : disj
+    disj : disj,
+    ormk : ormk,
+    types : {
+        'T_CONJ' : T_CONJ,
+        'T_DISJ' : T_DISJ,
+        'T_TERM' : T_TERM,
+        'T_ORMK' : T_ORMK
+    }
 };
 // ...expr intentionally left out
