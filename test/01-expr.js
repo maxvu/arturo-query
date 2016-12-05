@@ -266,6 +266,7 @@ describe( 'expr', function () {
         } );
 
         it( 'print negated expressions', function () {
+            (new conj([])).negate().toString().should.equal( '()' );
             (new conj([
                 new term( 'chipmunk' )
             ])).negate().toString().should.equal( '(-chipmunk)' );
@@ -286,6 +287,51 @@ describe( 'expr', function () {
             ])).toString( false ).should.equal( '(dog (eagle))' );
         } );
 
+    } );
+    
+    describe( 'expand()', function () {
+    
+        it( 'should remove superfluous nesting', function () {
+            (new disj([])).should.deepEqual(new disj([
+                new conj([])
+            ]).reduce());
+            
+            (new conj([])).should.deepEqual(new conj([
+                new conj([])
+            ]).reduce());
+            
+            (new conj([
+                new term( 'falcon' )
+            ])).should.deepEqual(new conj([
+                new conj([
+                    new conj([
+                        new term( 'falcon' )
+                    ]),
+                ])
+            ]).reduce());
+        } );
+        
+        it( 'should expand disjunctions', function () {
+            (new conj([
+                new term( 'heron' ),
+                new disj([
+                    new term( 'koi' ),
+                    new term( 'bass' )
+                ])
+            ]).reduce()).should.deepEqual(
+                new disj([
+                    new conj([
+                        new term( 'heron' ),
+                        new term( 'koi' ),
+                    ]),
+                    new conj([
+                        new term( 'heron' ),
+                        new term( 'bass' ),
+                    ])
+                ])
+            )
+        } );
+    
     } );
 
 } );
