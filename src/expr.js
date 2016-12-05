@@ -1,8 +1,15 @@
 'use strict';
 
+// Enumerable for expr types
 const T_CONJ = 1;
 const T_DISJ = 2;
 const T_TERM = 3;
+
+// How to print, for toString()
+const C_TERM_NEGATE = '-';
+const C_EXPR_NEGATE = '!';
+const C_CONJ_JOIN = ' ';
+const C_DISJ_JOIN = ' OR ';
 
 class expr {
     
@@ -94,6 +101,10 @@ class term extends expr {
         return this;
     }
     
+    toString () {
+        return ( this._negated ? C_TERM_NEGATE : '' ) + this._id;
+    }
+    
 };
 
 class conj extends expr {
@@ -119,6 +130,17 @@ class conj extends expr {
                 return x.negate();
             } )
         )
+    }
+    
+    toString ( topmost ) {
+        let inside = this.getChildren().map( ( cld ) => {
+            return cld.toString();
+        } ).join( C_CONJ_JOIN );
+        return (
+            this.isNegated() ? C_EXPR_NEGATE : ''
+        ) + (
+            topmost ? inside : '(' + inside + ')'
+        );
     }
 
 };
@@ -146,6 +168,17 @@ class disj extends expr {
                 return x.negate();
             } )
         )
+    }
+    
+    toString ( topmost ) {
+        let inside = this.getChildren().map( ( cld ) => {
+            return cld.toString();
+        } ).join( C_DISJ_JOIN );
+        return (
+            this.isNegated() ? C_EXPR_NEGATE : ''
+        ) + (
+            topmost ? inside : '(' + inside + ')'
+        );
     }
 
 };

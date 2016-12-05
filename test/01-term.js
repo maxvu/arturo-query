@@ -248,5 +248,44 @@ describe( 'expr', function () {
         } );
 
     } );
+    
+    describe( 'toString()', function () {
+        
+        it( 'print terms', function () {
+            (new term( 'aardvark' )).toString().should.equal( 'aardvark' );
+            (new term( 'anteater' )).toString().should.equal( 'anteater' );
+        } );
+        
+        it( 'print negated terms', function () {
+            (new term( 'bluebird' )).negate().toString().should.equal( '-bluebird' );
+            (new term( 'chameleon' )).negate().toString().should.equal( '-chameleon' );
+        } );
+        
+        it( 'print empty expressions', function () {
+            (new conj([])).toString().should.equal( '()' );
+        } );
+
+        it( 'print negated expressions', function () {
+            (new conj([
+                new term( 'chipmunk' )
+            ])).negate().toString().should.equal( '(-chipmunk)' );
+        } );
+        
+        it( 'print "topmost" expressions', function () {
+            (new conj([
+                new term( 'dog' ),
+                (new conj([
+                    new term( 'eagle' )
+                ]))
+            ])).toString( true ).should.equal( 'dog (eagle)' );
+            (new conj([
+                new term( 'dog' ),
+                (new conj([
+                    new term( 'eagle' )
+                ]))
+            ])).toString( false ).should.equal( '(dog (eagle))' );
+        } );
+
+    } );
 
 } );
