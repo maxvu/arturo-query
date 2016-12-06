@@ -223,6 +223,11 @@ describe( 'parser', function () {
             );
         } );
         
+        it( 'should throw without an expression to negate', function () {
+            ( () => { return parse( '!' ) } ).should.throw();
+            ( () => { return parse( 'not' ) } ).should.throw();
+            ( () => { return parse( '-' ) } ).should.throw();
+        } );
         
     } );
     

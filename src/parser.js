@@ -170,7 +170,10 @@ class parser {
                 return term;
         }
         // get the expression to be negated
-        return this.ps_expr().negate();            
+        let e;
+        if ( ( e = this.ps_expr() ) !== null )
+            return e.negate();
+        throw new Error( "no expression to negate" );
     }
     
     // parse a recursing, parenthetical term
