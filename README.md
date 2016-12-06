@@ -1,15 +1,11 @@
 # arturo-query
 
-`arturo-query` is a parser for a simple, boolean-term full-text query syntax.
-
-
-
+`arturo-query` is a parser for a simple, boolean-term full-text query syntax. It's intended to be both a preprocessor (e.g. to screen expensive queries) and augmentation (e.g. provide extra-search fields) for existing full-text stores.
 
 ## Features
 
 * Negation (`!`, `-` and `not`), disjunctive (`|`, `or`) and grouping (`()`) operators.
-* Logical refactoring toward disjunctionс-of-conjunctions.
-
+* Logical refactoring toward disjunction-of-conjunctions.
 
 ## Examples
 
@@ -22,7 +18,6 @@ and(
   )
 )
 ```
-
 
 ### `alpha not ( beta or not ( gamma or delta ) )`
 ```
@@ -59,11 +54,12 @@ or(
 
 ## Still TODO
 
+* Extra-search attributes, e.g. ``
 * `query` methods:
    * "Does this have any positive terms?"
    * "Does this query have a specific positive term? Or specific negative?"
    * "Are there conflicting terms (e.g. `X !X`)?"
    * "What is the disjunctive degree of this query? (i.e. 'how many ORs are there?')
-* i18n
+* i18n gotchyas
 
 
