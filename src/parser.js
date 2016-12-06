@@ -13,6 +13,7 @@ const I_OR = 'or';                // literal, spelled-out "or"
 const I_BAREINT = "\"'()|";       // characters that will interrupt bare terms
 const I_TERMPAREN = ')';          // character that will end a paren-bound expr
 const I_QUOTES = "\"'";           // characters that will open quoted terms
+const I_QUOTEESC = "\\";          // characters that will escape quoted chars
 
 class parser {
     constructor ( raw ) {
@@ -22,8 +23,8 @@ class parser {
     }
     
     // character at current index
-    _c () {
-        return this.raw[ this.i ];
+    _c ( n ) {
+        return this.raw[ this.i + ( n || 0 ) ];
     }
     
     // have reached the end of the stream?
@@ -133,12 +134,28 @@ class parser {
         this._dbg( 'quoted term' );
         let open = this.i;
         this._step();
-        while ( !this._end() && ( this._c() !== this.raw[ open ] ) )
+        while ( !this._end() ) {
+            if (
+                this._c() === this.raw[ open ] &&
+                I_QUOTEESC.indexOf( this.raw[ this.i - 1 ] ) === -1
+            ) {
+                break;
+            }
+            this._dbg( `quoted char (${this.raw[ this.i ]})` );
+            this._dump();
             this._step();
+        }
         if ( this._c() !== this.raw[ open ] )
         throw new Error( `unterminated quote (${this.raw[ open ]})` );
         this._step();
-        return new term( this.raw.slice( open + 1, this.i - 1 ) );
+        let term_id = this.raw.slice( open + 1, this.i - 1 ).replace(
+            new RegExp( '\\\\"' ), '"'
+        ).replace(
+            new RegExp( "\\\'" ), "'"
+        );
+        if ( term_id.length === 0 )
+            return new conj([ ]);
+        return new term( term_id );
     }
     
     // parse a negated expression (and toggle its flag)
