@@ -104,7 +104,7 @@ class expr {
                 let product = cartesian( combinators );
                 return new disj( product.map( ( combination ) => {
                     return new conj( conjunctives.concat( combination ) );
-                } ) );
+                } ) ).reduce();
             }
         }
 
