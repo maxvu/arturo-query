@@ -17,6 +17,8 @@ const I_QUOTEESC = "\\";          // characters that will escape quoted chars
 
 class parser {
     constructor ( raw ) {
+        if ( !raw instanceof String && typeof raw !== 'string' )
+            throw new Error( "parser only accepts String" );
         this.raw = raw;
         this.i = 0;
         this._debug = false;
@@ -161,7 +163,7 @@ class parser {
     // parse a negated expression (and toggle its flag)
     ps_neg () {
         this._dbg( 'negated term' );
-        // get the negating term
+        // get the negation operator
         if ( this._c() === '!' || this._c() === '-' ) {
             this._step();
         } else {
@@ -172,7 +174,7 @@ class parser {
         }
         // get the expression to be negated
         try {
-            return this.ps_expr().negated();
+            return this.ps_expr().negate();
         } catch ( e ) {
             throw ( typeof e === 'string' || e instanceof String )
                 ? new Error( 'dangling not' ) :
