@@ -227,6 +227,25 @@ describe( 'parser', function () {
     } );
     
     describe( 'disjunctive operators', function () {
+    
+        it( 'should produce disjunctions', function () {
+            parse(
+                ' snail or whale '
+            )._children.should.containEql(
+                new disj([
+                    new term( 'snail' ),
+                    new term( 'whale' )
+                ])
+            );
+            parse(
+                ' snail | whale '
+            )._children.should.containEql(
+                new disj([
+                    new term( 'snail' ),
+                    new term( 'whale' )
+                ])
+            );
+        } );
         
         it( 'should not be confused with terms that begin with "or"', function () {
             parse(
