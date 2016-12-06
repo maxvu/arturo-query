@@ -298,6 +298,20 @@ describe( 'parser', function () {
             } ).should.throw();
         } );
         
+        it( 'should take precedence over implicit AND', function () {
+            parse(
+                ' a or b c '
+            ).toString().should.equal(
+                new conj([
+                    new disj([
+                        new term( 'a' ),
+                        new term( 'b' )
+                    ]),
+                    new term( 'c' )
+                ]).reduce().toString()
+            );
+        } );
+        
     } );
     
     describe( 'parenthetical groups', function () {

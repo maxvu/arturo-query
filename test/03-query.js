@@ -41,8 +41,32 @@ describe( 'complex cases', function () {
             ).toString().should.equal(
                 parse( 'A !B (C or D)' ).toString()
             );
+            
+            parse(
+                '!( A !( B | not( C not D ) ) )'
+            ).toString().should.equal(
+                parse( '-A | B | -C | D' ).toString()
+            );
         } );
     
     } );
     
+    describe( 'unicode ( 🔥  💯  👌 )', function () {
+        it( 'should 👏 be 👏 recognized 👏 ', function () {
+            parse(
+                '🚹'
+            ).toString( 1 ).should.equal(
+                (new term( '🚹' )).getId()
+            );
+        } );
+        it( 'should not govern any spacing', function () {
+            parse(
+                'a 　 x'
+            )._children.length.should.equal(
+                1
+            );
+        } );
+    } );
+    
 } );
+
