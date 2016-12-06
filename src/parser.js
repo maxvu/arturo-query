@@ -17,7 +17,7 @@ const I_QUOTEESC = "\\";          // characters that will escape quoted chars
 
 class parser {
     constructor ( raw ) {
-        if ( !raw instanceof String && typeof raw !== 'string' )
+        if ( !( raw instanceof String ) && typeof raw !== 'string' )
             throw new Error( "parser only accepts String" );
         this.raw = raw;
         this.i = 0;
@@ -85,8 +85,6 @@ class parser {
             }
             if ( buf.length === 0 )
                 throw new Error( 'dangling or (start of query)' );
-            if ( buf[ buf.length - 1 ]._type === expr.types.T_ORMK )
-                throw new Error( 'two consecutive or\'s' );
             let pos_b = this.i;
             let c = this.ps_expr();
             if ( c === null )
@@ -120,7 +118,6 @@ class parser {
         } else {
             return this.ps_bare();
         }
-        ps_ws();
     }
     
     // skip whitespace
@@ -173,14 +170,7 @@ class parser {
                 return term;
         }
         // get the expression to be negated
-        try {
-            return this.ps_expr().negate();
-        } catch ( e ) {
-            throw ( typeof e === 'string' || e instanceof String )
-                ? new Error( 'dangling not' ) :
-                new Error( `dangling not (${e})` );
-        }
-            
+        return this.ps_expr().negate();            
     }
     
     // parse a recursing, parenthetical term

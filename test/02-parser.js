@@ -12,6 +12,20 @@ let parse = ( query ) => {
 };
 
 describe( 'parser', function () {
+
+    describe( 'constructor', function () {
+        it( 'should accept only a String', function () {
+            (() => {
+                new parser( [] )
+            }).should.throw();
+            (() => {
+                new parser( 3 )
+            }).should.throw();
+            (() => {
+                new parser( new RegExp() )
+            }).should.throw();
+        } );
+    } );
     
     describe( 'bare terms', function () {
         it( 'should parse simple terms', function () {
@@ -257,6 +271,20 @@ describe( 'parser', function () {
             
             ( () => {
                 parse( ' yak | \t| vulture ' )
+            } ).should.throw();
+        } );
+        
+    } );
+    
+    describe( 'parenthetical groups', function () {
+        
+        it( 'should die when left unmatched', function () {
+            ( () => {
+                parse( ' ( swan ' )
+            } ).should.throw();
+            
+            ( () => {
+                parse( ' ) warthog ' )
             } ).should.throw();
         } );
         
