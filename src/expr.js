@@ -13,6 +13,15 @@ const C_EXPR_NEGATE = '!';
 const C_CONJ_JOIN = ' ';
 const C_DISJ_JOIN = ' OR ';
 
+const DUMP_INDENT = '  ';
+
+function _dumpIndent ( level ) {
+    let ss = '';
+    for ( var i = 0; i < level; i++ )
+        ss += DUMP_INDENT;
+    return ss;
+}
+
 class expr {
     
     // can be empty or with constituent expr parts
@@ -150,6 +159,11 @@ class term extends expr {
         return ( this._negated ? C_TERM_NEGATE : '' ) + this._id;
     }
     
+    dump ( level ) {
+        level = level | 0;
+        return _dumpIndent( level + 1 ) + 'term(' + this._id + ")\n";
+    }
+    
 };
 
 class conj extends expr {
@@ -186,6 +200,15 @@ class conj extends expr {
         ) + (
             topmost ? inside : '(' + inside + ')'
         );
+    }
+    
+    dump ( level ) {
+        level = level | 0;
+        let ss = _dumpIndent( level ) + "and(\n";
+        this._children.forEach( ( child ) => {
+            ss += child.dump( level + 1 );
+        } );
+        return ss + _dumpIndent( level ) + ")\n";
     }
 
 };
@@ -224,6 +247,15 @@ class disj extends expr {
         ) + (
             topmost ? inside : '(' + inside + ')'
         );
+    }
+    
+    dump ( level ) {
+        level = level | 0;
+        let ss = _dumpIndent( level ) + "or(\n";
+        this._children.forEach( ( child ) => {
+            ss += child.dump( level + 1 );
+        } );
+        return ss + _dumpIndent( level ) + ")\n"
     }
 
 };
