@@ -100,21 +100,5 @@ module.exports = class stream {
         );
     }
     
-    /*
-        debugging
-    */
-
-    dump () {
-        var marker = ' ';
-        for ( var i = 0; i < this._peek + 1; i++ )
-            marker += ' ';
-        marker += '^';
-        let len = this._raw.length;
-        let pos = this._pos;
-        let peek = this._peek;
-        console.log( ` [${this._raw}] (len=${len},pos=${pos},peek=${peek})` );
-        console.log( marker );
-    }
-    
 };
 

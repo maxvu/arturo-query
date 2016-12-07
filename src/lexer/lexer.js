@@ -31,7 +31,6 @@ module.exports = class lexer {
         this._output = [];
         try {
             while ( !this._stream.done() ) {
-                this._stream.dump();
                 if ( this._stream.isWhitespace() )
                     this.lx_wts();
                     
@@ -75,7 +74,6 @@ module.exports = class lexer {
         this._stream.skip();
         while ( !this._stream.done() ) {
             this._stream.peek();
-            console.log( `lx_quo scan char(${this._stream.get()})` );
             if (
                 this._stream.get() === quote_open &&
                 charmap.QUO.ESC.indexOf( this._stream.get( -1 ) ) === -1
@@ -123,12 +121,4 @@ module.exports = class lexer {
     }
     
 };
-
-let is = require( 'util' ).inspect;
-let lx = new module.exports( ' hello- ( "world" ) | ago:!!3d' );
-lx.getStream().dump()
-console.log( is( lx.lex() ) );
-lx.getStream().dump();
-console.log( is( lx ) );
-
 
