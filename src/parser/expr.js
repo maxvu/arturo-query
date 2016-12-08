@@ -88,7 +88,7 @@ class conj extends expr {
 
 class disj extends expr {
 
-    constructor () {
+    constructor ( subexprs ) {
         super([]);
         this._children = subexprs;
         this._type = type_ids.DSJ;

@@ -55,10 +55,8 @@ module.exports = class parser {
         // combine tag pairs
         this._output = this.ps_tags( this._output );
         
-        // fold parenthetical groups into conj's
+        // fold parenthetical groups into conj's and over OR's for disj's
         this._output = this.ps_expr( this._output );
-        
-        // or
         
         // implicit AND
         
@@ -90,7 +88,11 @@ module.exports = class parser {
         while ( input.length ) {
             let curr = input.shift();
             if ( curr instanceof lextypes.lpr ) {
-                output.push( new expr.types.conj( this.ps_expr( input, 1 ) ) );
+                output.push( new expr.types.conj(
+                    this.ps_or(
+                        this.ps_expr( input, 1 )
+                    )
+                ) );
             } else if ( curr instanceof lextypes.rpr ) {
                 if ( !expect_rpr )
                     throw new Error( "Unbalanced paren (extra right-paren)" );
@@ -101,6 +103,28 @@ module.exports = class parser {
         }
         if ( expect_rpr )
             throw new Error( "Unbalanced paren (extra left-paren)" );
+        return this.ps_or( output );
+    }
+    
+    ps_or ( input ) {
+        if ( !input.length ) return [];
+        if ( input[ 0 ] instanceof lextypes.oro )
+            throw new Error( "OR cannot occur at beginning of expression." );
+        if ( input[ input.length - 1 ] instanceof lextypes.oro )
+            throw new Error( "OR cannot occur at end of expression." );
+        let output = [];
+        while ( input.length ) {
+            let curr = input.shift();
+            if ( curr instanceof lextypes.oro ) {
+                let prev = output.pop();
+                if ( prev instanceof lextypes.oro )
+                    throw new Error( "OR cannot occur twice consecutively" );
+                let next = input.shift();
+                output.push( new expr.types.disj([ prev, next ]) );
+            } else {
+                output.push( curr );
+            }
+        }
         return output;
     }
 
