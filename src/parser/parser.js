@@ -4,6 +4,9 @@ var expr = require( './expr.js' );
 var lexer = require( '../lexer/lexer.js' );
 var lextypes = require( '../lexer/symbol.js' ).types;
 
+const T_OR = [ 'or' ];
+const T_NOT = [ 'not' ];
+
 // TODO: localize error to specific symbols
 module.exports = class parser {
 
@@ -44,12 +47,7 @@ module.exports = class parser {
         } );
         
         // promote all lexer 'trm's to expr.terms
-        this._output = this._output.map( ( sym ) => {
-            if ( sym instanceof lextypes.trm )
-                return new expr.types.term( sym );
-            else
-                return sym;
-        } );
+        this._output = this._output.map( this.ps_term );
         
         // combine tag pairs
         this._output = this.ps_tags( this._output );
@@ -63,6 +61,21 @@ module.exports = class parser {
         return this._output;
     }
     
+    // convert lexer terms into parser terms
+    // turn or's into disjunctors and not's into negators
+    ps_term ( term ) {
+        if ( ! term instanceof lextypes.trm )
+            return term;
+        if ( T_NOT.indexOf( term.getText().toLowerCase() ) !== -1 ) {
+            return new lextypes.neg;
+        } else if ( T_OR.indexOf( term.getText().toLowerCase() ) !== -1 ) {
+            return new lextypes.oro;
+        } else {
+            return new expr.types.term( term );
+        }
+    }
+    
+    // parse triplets in the form of (term tag-delim term) into named tags
     ps_tags ( input ) {
         var idx;
         while ( ( idx = input.findIndex( ( sym ) => {
@@ -83,6 +96,7 @@ module.exports = class parser {
         return input;
     }
     
+    // recursive-descent parse parenthetical groups
     ps_expr ( input, expect_rpr ) { // TODO: make a stack
         let output = [];
         while ( input.length ) {
@@ -106,6 +120,7 @@ module.exports = class parser {
         return this.ps_or( output );
     }
     
+    // parse (expr or expr) triplets into disjunctions
     ps_or ( input ) {
         if ( !input.length ) return [];
         if ( input[ 0 ] instanceof lextypes.oro )
