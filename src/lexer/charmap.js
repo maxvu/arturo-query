@@ -38,6 +38,7 @@ module.exports = {
     
     // bare term, interrupting characters
     TRM : {
+        // TODO: represent as string-addition of above groups
         INT : ':!(\"\')|'
     }
     

@@ -34,7 +34,6 @@ module.exports = class parser {
         }
         
         this._output = this._input;
-        console.log( require( 'util' ).inspect( this._output ) );
         
         // strip all whitespace and quotes
         this._output = this._output.filter( ( sym ) => {
@@ -59,8 +58,7 @@ module.exports = class parser {
         this._output = this.ps_expr( this._output );
         
         // implicit AND
-        
-        console.log( require( 'util' ).inspect( this._output, { depth: 10 } ) );
+        this._output = new expr.types.conj( this._output );
     }
     
     ps_tags ( input ) {
