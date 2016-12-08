@@ -59,6 +59,8 @@ module.exports = class parser {
         
         // implicit AND
         this._output = new expr.types.conj( this._output );
+        
+        return this._output;
     }
     
     ps_tags ( input ) {
