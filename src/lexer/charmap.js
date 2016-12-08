@@ -38,7 +38,7 @@ module.exports = {
     
     // bare term, interrupting characters
     TRM : {
-        INT : ':!(\"\''
+        INT : ':!(\"\')'
     }
     
 };

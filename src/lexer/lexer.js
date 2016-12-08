@@ -28,6 +28,8 @@ module.exports = class lexer {
     }
     
     lex () {
+        if ( this._error !== null ) return null;
+        if ( this._output !== null ) return this._output;
         this._output = [];
         try {
             while ( !this._stream.done() ) {
@@ -70,12 +72,11 @@ module.exports = class lexer {
     }
 
     lx_quo () {
-        let quote_open = this._stream.get();
-        this._stream.skip();
+        let quote_open = this._stream.peek().extract();
         while ( !this._stream.done() ) {
             this._stream.peek();
             if (
-                this._stream.get() === quote_open &&
+                this._stream.get() === quote_open.getText() &&
                 charmap.QUO.ESC.indexOf( this._stream.get( -1 ) ) === -1
             ) {
                 break;
@@ -85,39 +86,39 @@ module.exports = class lexer {
             throw new Error( "Unterminated quote" );
         this._output.push( new symbol.types.quo( quote_open ) );
         this._output.push( new symbol.types.trm( this._stream.extract() ) );
-        this._output.push( new symbol.types.quo( quote_open ) );
-        this._stream.skip();
+        this._stream.peek();
+        this._output.push( new symbol.types.quo( this._stream.extract() ) );
     }
     
     lx_lpr () {
-        this._output.push( new symbol.types.lpr( this._stream.get() ) );
-        this._stream.skip();
+        this._stream.peek();
+        this._output.push( new symbol.types.lpr( this._stream.extract() ) );
     }
     
     lx_rpr () {
-        this._output.push( new symbol.types.rpr( this._stream.get() ) );
-        this._stream.skip();
+        this._stream.peek();
+        this._output.push( new symbol.types.rpr( this._stream.extract() ) );
     }
 
     lx_trm () {
         while ( this._stream.isBareTerm() )
             this._stream.peek();
-        this._output.push(  new symbol.types.trm( this._stream.extract() ) );
+        this._output.push( new symbol.types.trm( this._stream.extract() ) );
     }
     
     lx_tag () {
-        this._output.push( new symbol.types.tag( this._stream.get() ) );
-        this._stream.skip();
+        this._stream.peek();
+        this._output.push( new symbol.types.tag( this._stream.extract() ) );
     }
     
     lx_neg () {
-        this._output.push( new symbol.types.neg( this._stream.get() ) );
-        this._stream.skip();
+        this._stream.peek();
+        this._output.push( new symbol.types.neg( this._stream.extract() ) );
     }
     
     lx_oro () {
-        this._output.push( new symbol.types.oro( this._stream.get() ) );
-        this._stream.skip();
+        this._stream.peek();
+        this._output.push( new symbol.types.oro( this._stream.extract() ) );
     }
     
 };

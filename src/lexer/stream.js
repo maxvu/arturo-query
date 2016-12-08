@@ -1,8 +1,12 @@
 'use strict';
 var charmap = require( './charmap.js' );
+var symbol = require( './symbol.js' );
+var site = require( './site.js' );
 
 /*
-    A (string, number) tuple representing an input stream and its current index.
+    A (string, number) tuple representing an input stream and its current index.    
+    The peek()/extract() combination allows pulling out substrings, sites
+      without having the client juggle index numbers.
 */
 
 module.exports = class stream {
@@ -37,19 +41,23 @@ module.exports = class stream {
         return this;
     }
     
-    /*
-        The peek()/extract() combination allows pulling out substrings
-          without having the client juggle index numbers.
-    */
-    
+    // advance 'peek' pointer
     peek ( n ) {
         this._peek += ( n || 1 );
+        return this;
     }
     
+    // pick out the substring and bounding indices
     extract () {
-        let ss = this._raw.slice( this._pos, this._peek );
+        let ls = new site(
+            this._pos,
+            this._peek,
+            this._pos === this._peek
+                ? this._raw[ this._pos ]
+                : this._raw.slice( this._pos, this._peek )
+        );
         this.sync();
-        return ss;
+        return ls;
     }
     
     /*

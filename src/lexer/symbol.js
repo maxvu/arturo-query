@@ -21,69 +21,69 @@ const type_ids = {
 */
 
 class sym { 
-    constructor ( txt ) {
-        this._txt = txt;
+    constructor ( site ) {
+        this._site = site;
     }
     getType () {
         return this._type;
     }
-    getText () {
-        return this._txt;
+    getSite () {
+        return this._site;
     }
 };
 
 class wts extends sym {
-    constructor( txt ) {
-        super( txt );
+    constructor( site ) {
+        super( site );
         this._type = type_ids.WTS;
     }
 };
 
 class quo extends sym {
-    constructor ( txt ) {
-        super( txt );
+    constructor( site ) {
+        super( site );
         this._type = type_ids.QUO;
     }
 };
 
 class trm extends sym {
-    constructor( txt ) {
-        super( txt );
+    constructor( site ) {
+        super( site );
         this._type = type_ids.TRM;
     }
 };
 
 class lpr extends sym {
-    constructor () {
-        super( charmap.PAR.OPN );
+    constructor ( site ) {
+        super( site );
         this._type = type_ids.LPR;
     }  
 };
 
 class rpr extends sym {
-    constructor () {
-        super( charmap.PAR.CLS );
+    constructor ( site ) {
+        super( site );
         this._type = type_ids.RPR;
     }  
 };
 
 class tag extends sym {
-    constructor () {
-        super( charmap.TAG.DET );
+    constructor ( site ) {
+        super( site );
         this._type = type_ids.TAG;
     }
 };
 
 class neg extends sym {
-    constructor ( txt ) {
-        super( txt );
+    constructor ( site ) {
+        super( site );
         this._type = type_ids.NEG;
     }
 };
 
 class oro extends sym {
-    constructor ( txt ) {
-        super( txt );
+    constructor ( site ) {
+        super( site );
         this._type = type_ids.ORO;
     }
 };
