@@ -30,6 +30,9 @@ class sym {
     getSite () {
         return this._site;
     }
+    getText () {
+        return this._site.getText();
+    }
 };
 
 class wts extends sym {

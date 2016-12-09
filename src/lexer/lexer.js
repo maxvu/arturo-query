@@ -27,10 +27,15 @@ module.exports = class lexer {
         return this._output;
     }
     
+    getRaw () {
+        return this._stream._raw;
+    }
+    
     lex () {
         if ( this._error !== null ) return null;
         if ( this._output !== null ) return this._output;
         this._output = [];
+        
         try {
             while ( !this._stream.done() ) {
                 if ( this._stream.isWhitespace() )
@@ -73,14 +78,13 @@ module.exports = class lexer {
 
     lx_quo () {
         let quote_open = this._stream.peek().extract();
-        while ( !this._stream.done() ) {
+        while (
+            !this._stream.done() && (
+                this._stream.get() !== quote_open.getText() ||
+                charmap.QUO.ESC.indexOf( this._stream.get( -1 ) ) !== -1
+            )
+        ) {
             this._stream.peek();
-            if (
-                this._stream.get() === quote_open.getText() &&
-                charmap.QUO.ESC.indexOf( this._stream.get( -1 ) ) === -1
-            ) {
-                break;
-            }
         }
         if ( this._stream.done() )
             throw new Error( "Unterminated quote" );
