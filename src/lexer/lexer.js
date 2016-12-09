@@ -79,10 +79,8 @@ module.exports = class lexer {
     lx_quo () {
         let quote_open = this._stream.peek().extract();
         while (
-            !this._stream.done() && (
-                this._stream.get() !== quote_open.getText() ||
-                charmap.QUO.ESC.indexOf( this._stream.get( -1 ) ) !== -1
-            )
+            !this._stream.done() &&
+            this._stream.get() !== quote_open.getText()
         ) {
             this._stream.peek();
         }

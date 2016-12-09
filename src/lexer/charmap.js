@@ -11,8 +11,7 @@ module.exports = {
     
     // quoted terms
     QUO : {
-        DET : "\"'",
-        ESC : "\\"
+        DET : "\"'"
     },
     
     // parentheticals
