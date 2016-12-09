@@ -23,7 +23,7 @@ describe( 'lexer', function () {
     } );
     
     describe( 'whitespace', function () {
-        it( 'should be properly interpreted', function () {
+        it( 'should be interpreted properly', function () {
             expectdump({
                 // each whitespace character named in the map triggers wts()
                 ' x '   : 'wts( ) trm(x) wts( )',
@@ -35,7 +35,7 @@ describe( 'lexer', function () {
 
     describe( 'quoted terms', function () {
     
-        it( 'should be properly interpreted', function () {
+        it( 'should be interpreted properly', function () {
             expectdump({
 
                 // normal case
@@ -51,7 +51,7 @@ describe( 'lexer', function () {
                 "x'y'"  : "trm(x) quo(') trm(y) quo(')",
                 
                 // no spacing on right, single-quotes
-                "'x'y"  : "quo(') trm(x) quo(') trm(y)"
+                "'x'y"  : "quo(') trm(x) quo(') trm(y)",
 
             });
         } );
@@ -97,7 +97,40 @@ describe( 'lexer', function () {
             });
         } );
     
-    } );    
+    } );
+    
+    describe( 'negators', function () {
+    
+        it( 'should be interpreted properly', function () {
+            expectdump({
+                '!x'   : 'neg(!) trm(x)',
+                '!"x"' : 'neg(!) quo(") trm(x) quo(")',
+                "!'x'" : "neg(!) quo(') trm(x) quo(')",
+                '!(x)' : 'neg(!) lpr(() trm(x) rpr())',
+                '(!x)' : 'lpr(() neg(!) trm(x) rpr())',
+                
+                '-x'   : 'neg(-) trm(x)',
+                '-"x"' : 'neg(-) quo(") trm(x) quo(")',
+                "-'x'" : "neg(-) quo(') trm(x) quo(')",
+                '-(x)' : 'neg(-) lpr(() trm(x) rpr())',
+                '(-x)' : 'lpr(() neg(-) trm(x) rpr())'
+            });
+        } );
+        
+    } );
+    
+    describe( 'tag delimiters', function () {
+        it( 'should be interpreted properly', function () {
+            expectdump({
+                'a:b'   : 'trm(a) tag(:) trm(b)',
+                '"a":b' : 'quo(") trm(a) quo(") tag(:) trm(b)',
+                'a:"b"' : 'trm(a) tag(:) quo(") trm(b) quo(")',
+                '!a:b'  : 'neg(!) trm(a) tag(:) trm(b)',
+                'a:!b'  : 'trm(a) tag(:) neg(!) trm(b)',
+                'a:-b'  : 'trm(a) tag(:) neg(-) trm(b)'
+            });
+        } );
+    } );
 
 } );
 
