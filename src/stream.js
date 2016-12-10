@@ -39,6 +39,11 @@ module.exports = class stream {
         return this._raw[ this._end + ( n || 0 ) ];
     }
     
+    // is the `peek()`'ed character in `chars`?
+    scan ( chars ) {
+        return chars.indexOf( this.peek() ) !== -1;
+    }
+    
     // pull out the substring between 'begin' and 'end',  return as a site
     // and sync 'begin' to 'end'
     extract () {

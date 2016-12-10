@@ -58,5 +58,16 @@ describe( 'stream', function () {
         let s = (new stream( 'hello' )).step().step();
         s.extract().getText().should.equal( 'he' );
     } );
+    
+    it( 'should scan() correctly', function () {
+        let s = new stream( 'hi' );
+        should( s.scan( 'abcd' ) ).be.false();
+        should( s.scan( 'efgh' ) ).be.true();
+        s.step();
+        should( s.scan( 'abcd' ) ).be.false();
+        should( s.scan( 'efgh' ) ).be.false();
+        should( s.scan( 'ijkl' ) ).be.true();
+        
+    } );
 
 } );
