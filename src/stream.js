@@ -34,14 +34,12 @@ module.exports = class stream {
     peek ( n ) {
         if ( !Number.isInteger( n ) )
             n = Math.floor( n );
-        if ( n < 0 )
-            n = 0;
         return this._raw[ this._end + ( n || 0 ) ];
     }
     
     // is the `peek()`'ed character in `chars`?
-    scan ( chars ) {
-        return chars.indexOf( this.peek() ) !== -1;
+    scan ( chars, n ) {
+        return chars.indexOf( this.peek( n || 0 ) ) !== -1;
     }
     
     // pull out the substring between 'begin' and 'end',  return as a site

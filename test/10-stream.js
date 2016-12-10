@@ -38,13 +38,6 @@ describe( 'stream', function () {
         should( s.peek( 1.5 ) ).equal( 'i' );
     } );
     
-    it( 'should peek() at 0 when given arg < 0', function () {
-        let s = new stream( 'hi' );
-        should( s.peek( -1 ) ).equal( 'h' );
-        s.step();
-        should( s.peek( -1 ) ).equal( 'i' );
-    } );
-    
     it( 'should extract() null when substring is empty', function () {
         let s = new stream( 'hi' );
         should( s.extract() ).be.null();
@@ -67,7 +60,12 @@ describe( 'stream', function () {
         should( s.scan( 'abcd' ) ).be.false();
         should( s.scan( 'efgh' ) ).be.false();
         should( s.scan( 'ijkl' ) ).be.true();
-        
+    } );
+    
+    it( 'can scan() backwards', function () {
+        let s = new stream( 'hi' );
+        s.step();
+        should( s.scan( 'h', -1 ) ).be.true();
     } );
 
 } );
