@@ -98,6 +98,8 @@ class tagp extends expr {
         ) {
             throw new Error( "tagp accepts only a term-tag-term triplet" );
         }
+        super( tokens );
+        this._type = type_ids.tagp;
     }
 
 };
