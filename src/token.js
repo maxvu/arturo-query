@@ -19,7 +19,6 @@ const type_ids = {
 };
 
 // base, abstract token type
-// houses the substring and corresponding indices under one, testable type
 class tok {
     constructor ( tok_site ) {
         if ( !( tok_site instanceof site ) )
@@ -105,6 +104,7 @@ class wts extends tok {
 };
 
 module.exports = {
+    tok : tok,
     trm : trm,
     quo : quo,
     tag : tag,
