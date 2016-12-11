@@ -4,6 +4,10 @@ var token = require( './token' );
 var stream = require( './stream' );
 var charmap = require( './charmap' );
 
+/*
+    Transform a string into an array of token symbols defined in 'token'.
+*/
+
 module.exports = ( raw ) => {
     
     var input = new stream( raw );
