@@ -47,8 +47,16 @@ class rcrs extends expr {
         }, [] );
     }
     
+    getChildren () {
+        return this._children;
+    }
+    
     isRecursive () {
         return true;
+    }
+    
+    isNegated () {
+        return false;
     }
     
 };
@@ -59,6 +67,12 @@ class conj extends rcrs {
         super( subexprs );
         this._type = type_ids.conj;
     }
+    
+    negate () {
+        return new disj( this._children.map ( ( child ) => {
+            return child.negate();
+        } ) );
+    }
 
 };
 
@@ -67,6 +81,12 @@ class disj extends rcrs {
     constructor ( subexprs ) {
         super( subexprs );
         this._type = type_ids.disj;
+    }
+    
+    negate () {
+        return new conj( this._children.map ( ( child ) => {
+            return child.negate()
+        } ) );
     }
 
 };
@@ -78,10 +98,21 @@ class term extends expr {
             throw new Error( "'term' expression accepts only a token 'trm'" );
         super([ trm ]);
         this._type = type_ids.term;
+        this._negated = false;
     }
     
     getId () {
         return this._tokens[ 0 ].getText();
+    }
+    
+    negate () {
+        let ng = new term( this.getTokens()[ 0 ] );
+        ng._negated = true;
+        return ng;
+    }
+    
+    isNegated () {
+        return this._negated;
     }
     
 };
@@ -101,6 +132,14 @@ class tagp extends expr {
         super( tokens );
         this._type = type_ids.tagp;
     }
+    
+    negate () {
+        return this;
+    }
+    
+    isNegated () {
+        return false;
+    }
 
 };
 
@@ -113,3 +152,4 @@ module.exports = {
     tagp : tagp,
     type_ids : type_ids
 };
+

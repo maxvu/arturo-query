@@ -65,6 +65,13 @@ describe( 'expr', function () {
         it( 'should give id as string', function () {
             stub.term( 'someterm' ).getId().should.equal( 'someterm' );
         } );
+        
+        it( 'should negate() statelessly', function () {
+            let nt = stub.term('a');
+            nt.isNegated().should.be.false();
+            nt.negate().isNegated().should.be.true();
+            nt.negate().isNegated().should.be.true();
+        } );
     
     } );
     
@@ -106,6 +113,11 @@ describe( 'expr', function () {
                 ( tk instanceof token.tok ).should.be.true();
             } );
         } );
+        
+        it( 'should ignore negate()', function () {
+            tg.isNegated().should.be.false();
+            tg.negate().isNegated().should.be.false();
+        } );
     
     } );
     
@@ -131,6 +143,15 @@ describe( 'expr', function () {
             ( tokens[ 0 ] instanceof token.trm ).should.be.true();
             ( tokens[ 1 ] instanceof token.trm ).should.be.true();
         } );
+        
+        it( 'should statelessly De Morgan on negate()', function () {
+            someconj.negate().getType().should.equal( expr.type_ids.disj );
+            someconj.isNegated().should.be.false();
+            someconj.negate().getChildren().forEach( ( child ) => {
+                child.isNegated().should.be.true();
+                // ...only because we know it's two terms
+            } );
+        } );
     
     } );
     
@@ -155,6 +176,14 @@ describe( 'expr', function () {
             tokens.length.should.equal( 2 );
             ( tokens[ 0 ] instanceof token.trm ).should.be.true();
             ( tokens[ 1 ] instanceof token.trm ).should.be.true();
+        } );
+        
+        it( 'should statelessly De Morgan on negate()', function () {
+            somedisj.negate().getType().should.equal( expr.type_ids.conj );
+            somedisj.isNegated().should.be.false();
+            somedisj.negate().getChildren().forEach( ( child ) => {
+                child.isNegated().should.be.true();
+            } );
         } );
     
     } );
