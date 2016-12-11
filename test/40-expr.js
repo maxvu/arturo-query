@@ -55,7 +55,7 @@ describe( 'expr', function () {
             } ).should.throw();
         } );
         
-        it( 'should give tokens (array of size one)', function () {
+        it( 'should give tokens as array of size one', function () {
             let tokens = stub.term( 'someterm' ).getTokens();
             tokens.should.be.an.Array();
             tokens.length.should.equal( 1 );
@@ -90,6 +90,10 @@ describe( 'expr', function () {
             } ).should.throw();
         } );
         
+        it( 'should report as type "tagp"', function () {
+            tg.getType().should.equal( expr.type_ids.tagp );
+        } );
+        
         it( 'should not report as recursive', function () {
             should(
                 stub.term( 'someterm' ).isRecursive()
@@ -104,5 +108,56 @@ describe( 'expr', function () {
         } );
     
     } );
+    
+    describe( 'conj', function () {
+    
+        let someconj = new expr.conj([
+            stub.term( 'alpha' ),
+            stub.term( 'beta' )
+        ]);
+        
+        it( 'should report as type "conj"', function () {
+            someconj.getType().should.equal( expr.type_ids.conj );
+        } );
+        
+        it( 'should report as recursive', function () {
+            someconj.isRecursive().should.be.true();
+        } );
+        
+        it( 'should give tokens as concatenation of childrens\'', function () {
+            let tokens = someconj.getTokens();
+            tokens.should.be.an.Array();
+            tokens.length.should.equal( 2 );
+            ( tokens[ 0 ] instanceof token.trm ).should.be.true();
+            ( tokens[ 1 ] instanceof token.trm ).should.be.true();
+        } );
+    
+    } );
+    
+    describe( 'disj', function () {
+    
+        let somedisj = new expr.disj([
+            stub.term( 'alpha' ),
+            stub.term( 'beta' )
+        ]);
+        
+        it( 'should report as type "disj"', function () {
+            somedisj.getType().should.equal( expr.type_ids.disj );
+        } );
+        
+        it( 'should report as recursive', function () {
+            somedisj.isRecursive().should.be.true();
+        } );
+        
+        it( 'should give tokens as concatenation of childrens\'', function () {
+            let tokens = somedisj.getTokens();
+            tokens.should.be.an.Array();
+            tokens.length.should.equal( 2 );
+            ( tokens[ 0 ] instanceof token.trm ).should.be.true();
+            ( tokens[ 1 ] instanceof token.trm ).should.be.true();
+        } );
+    
+    } );
 
 } );
+
