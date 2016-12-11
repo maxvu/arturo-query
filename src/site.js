@@ -1,4 +1,5 @@
 'use strict';
+var error = require( './error' );
 
 /*
     A simple tuple that describes where, in a lexer stream, a particular token
@@ -23,6 +24,10 @@ module.exports = class site {
     
     getText () {
         return this._text;
+    }
+    
+    error ( message ) {
+        return new error( this, message );
     }
 
 };

@@ -45,8 +45,6 @@ module.exports = class stream {
     // pull out the substring between 'begin' and 'end',  return as a site
     // and sync 'begin' to 'end'
     extract () {
-        if ( this._begin === this._end )
-            return null;
         let s = new site(
             this._begin,
             this._end,

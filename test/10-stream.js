@@ -38,13 +38,15 @@ describe( 'stream', function () {
         should( s.peek( 1.5 ) ).equal( 'i' );
     } );
     
-    it( 'should extract() null when substring is empty', function () {
-        let s = new stream( 'hi' );
-        should( s.extract() ).be.null();
-        s.step().extract();
-        should( s.extract() ).be.null();
-        should( s.step().extract().getText() ).equal( 'i' );
-        should( s.step().step().extract() ).be.null();
+    it( 'should extract() zero-length site when substring is empty', function () {
+        let st1 = new stream( 'hi' );
+        st1.extract().getText().should.equal( '' );
+        should( st1.extract().getBegin() ).equal( 0 );
+        should( st1.extract().getEnd() ).equal( 0 );
+        let st2 = new stream( 'hi' ).step();
+        st2.extract();
+        should( st2.extract().getBegin() ).equal( 1 );
+        should( st2.extract().getEnd() ).equal( 1 );
     } );
     
     it( 'should extract() exclusive of `end`', function () {
