@@ -59,6 +59,12 @@ class rcrs extends expr {
         return false;
     }
     
+    toString () {
+        return this._children.reduce( ( acc, child ) => {
+            return acc.concat([ child.toString() ]);
+        }, [] ).join( this._infix );
+    }
+    
 };
 
 class conj extends rcrs {
@@ -66,6 +72,7 @@ class conj extends rcrs {
     constructor ( subexprs ) {
         super( subexprs );
         this._type = type_ids.conj;
+        this._infix = ' ';
     }
     
     negate () {
@@ -81,6 +88,7 @@ class disj extends rcrs {
     constructor ( subexprs ) {
         super( subexprs );
         this._type = type_ids.disj;
+        this._infix = ' OR ';
     }
     
     negate () {
@@ -115,6 +123,10 @@ class term extends expr {
         return this._negated;
     }
     
+    toString () {
+        return ( this._negated ? '-' : '' ) + `"${this.getId()}"`;
+    }
+    
 };
 
 class tagp extends expr {
@@ -133,12 +145,24 @@ class tagp extends expr {
         this._type = type_ids.tagp;
     }
     
+    getAttr () {
+        return tokens[ 0 ].getText();
+    }
+    
+    getVal () {
+        return tokens[ 2 ].getText();
+    }
+    
     negate () {
         return this;
     }
     
     isNegated () {
         return false;
+    }
+    
+    toString () {
+        return `'${getAttr()}':'${getVal()}`;
     }
 
 };
