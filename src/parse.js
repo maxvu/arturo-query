@@ -102,7 +102,7 @@ module.exports = function parse ( input ) {
     }
     
     // implicit AND
-    input = new expr.conj( input );
+    input = (new expr.conj( input )).normalize();
     
     return input;
 

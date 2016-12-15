@@ -4,9 +4,20 @@ var expr = require( '../src/expr' );
 var token = require( '../src/token' );
 var parse = require( '../src/parse' );
 var lex = require( '../src/lex' );
+var site = require( '../src/site' );
 
 let parsedump = ( query ) => {
     return parse( lex( query ) ).toString();
+};
+
+let stub = {
+    term : function ( begin, end, id ) {
+        return new expr.term(
+            new token.trm(
+                new site( begin, end, id )
+            )
+        );
+    }
 };
 
 describe( 'parse()', function () {
@@ -26,6 +37,16 @@ describe( 'parse()', function () {
         } );
         
     } );
+    
+    describe( 'bare terms', function () {
+        
+        it( 'should pick out ORs', function () {
+            parsedump(
+                'a OR b'
+            ).should.equal( parsedump( 'a | b' ) );
+        } );
+        
+    } );
 
     describe( 'quoted terms', function () {
     
@@ -39,6 +60,15 @@ describe( 'parse()', function () {
             parsedump( "'hello-world'" ).should.equal( parsedump(
                 'hello-world'
             ) );
+        } );
+        
+        it( 'should die when unmatched', function () {
+            ( () => {
+                return parse( lex( '" hello ' ) );
+            } ).should.throw();
+            ( () => {
+                return parse( lex( ' hello "' ) );
+            } ).should.throw();
         } );
         
     } );
@@ -72,6 +102,12 @@ describe( 'parse()', function () {
     } );
     
     describe( 'disjunctions', function () {
+    
+        it( 'should work', function () {
+            parse( lex( 'a or b' ) ).getType().should.equal(
+                expr.type_ids.disj
+            );
+        } );
         
         it( 'should die when found at beginning or end of stream', function () {
             ( () => { parsedump( 'or a' ); } ).should.throw();
@@ -94,9 +130,41 @@ describe( 'parse()', function () {
 
     describe( 'negation', function () {
         
+        it( 'should work', function () {
+            parse( lex( '!a' ) ).isNegated().should.be.true();
+            parsedump( "!a" ).should.equal( parsedump( 'not a' ) );
+        } );
+        
+        it( 'should apply and De Morgan over parentheticals', function () {
+            parsedump(
+                '!( a or b )'
+            ).should.equal( parsedump( '!a !b' ) );
+        } );
+        
     } );
     
     describe( 'parenthetical expressions', function () {
+        
+        it( 'should work', function () {
+            parse( lex( '( a b ) or c' ) ).should.deepEqual(
+                new expr.disj([
+                    new expr.conj([
+                        stub.term( 2, 3, 'a' ),
+                        stub.term( 4, 5, 'b' )
+                    ]),
+                    stub.term( 11, 12, 'c' )
+                ])
+            );
+        } );
+        
+        it( 'should die when unmatched', function () {
+            ( () => {
+                return parse( lex( '( hello ' ) );
+            } ).should.throw();
+            ( () => {
+                return parse( lex( ' hello) ' ) );
+            } ).should.throw();
+        } );
         
     } );
 
