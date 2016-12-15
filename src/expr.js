@@ -59,10 +59,11 @@ class rcrs extends expr {
         return false;
     }
     
-    toString () {
-        return this._children.reduce( ( acc, child ) => {
+    toString ( outtermost ) {
+        let inner = this._children.reduce( ( acc, child ) => {
             return acc.concat([ child.toString() ]);
         }, [] ).join( this._infix );
+        return outtermost ? '( ' + inner + ' )' : inner;
     }
     
 };
