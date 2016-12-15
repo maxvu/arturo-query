@@ -133,16 +133,25 @@ class term extends expr {
 class tagp extends expr {
 
     constructor ( tokens ) {
-        if (
-            ( !( tokens instanceof Array ) && typeof tokens !== 'array' ) ||
-            tokens.length !== 3 ||
-            !( tokens[ 0 ] instanceof token.trm ) ||
-            !( tokens[ 1 ] instanceof token.tag ) ||
-            !( tokens[ 2 ] instanceof token.trm )
+        if ( !( tokens instanceof Array ) && typeof tokens !== 'array' )
+            throw new Error( "expr.tagp accepts only an Array" );
+        if ( tokens.length !== 3 )
+            throw new Error( "expr.tagp accepts only a term-tag-term triplet" );
+            
+        let attr = tokens[ 0 ];
+        let tag  = tokens[ 1 ];
+        let val  = tokens[ 2 ];
+        
+        if ( 
+            !( attr instanceof token.trm ) ||
+            !( tag  instanceof token.tag ) ||
+            !( val  instanceof token.trm )
         ) {
-            throw new Error( "tagp accepts only a term-tag-term triplet" );
+            throw new Error( "expr.tagp accepts only a term-tag-term triplet" );
         }
+        
         super( tokens );
+        
         this._type = type_ids.tagp;
         this._negated = false;
     }
