@@ -143,6 +143,7 @@ class tagp extends expr {
         }
         super( tokens );
         this._type = type_ids.tagp;
+        this._negated = false;
     }
     
     getAttr () {
@@ -154,15 +155,17 @@ class tagp extends expr {
     }
     
     negate () {
-        return this;
+        let ng = new tagp( this._tokens );
+        ng._negated = true;
+        return ng;
     }
     
     isNegated () {
-        return false;
+        return this._negated;
     }
     
     toString () {
-        return `'${getAttr()}':'${getVal()}`;
+        return ( this._negated ? '-' : '' ) + `'${getAttr()}':'${getVal()}'`;
     }
 
 };

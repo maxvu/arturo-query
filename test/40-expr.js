@@ -114,9 +114,10 @@ describe( 'expr', function () {
             } );
         } );
         
-        it( 'should ignore negate()', function () {
+        it( 'should negate() statelessly', function () {
             tg.isNegated().should.be.false();
-            tg.negate().isNegated().should.be.false();
+            tg.negate().isNegated().should.be.true();
+            tg.isNegated().should.be.false();
         } );
     
     } );
@@ -184,6 +185,16 @@ describe( 'expr', function () {
             somedisj.negate().getChildren().forEach( ( child ) => {
                 child.isNegated().should.be.true();
             } );
+        } );
+    
+    } );
+    
+    describe( 'toString()', function () {
+    
+        it( 'behaves', function () {
+            
+            // TODO
+            
         } );
     
     } );
