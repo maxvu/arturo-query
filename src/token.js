@@ -1,6 +1,7 @@
 'use strict';
 var site = require( './site' );
 var charmap = require( './charmap' );
+var error = require( './error' );
 
 /*
     lexer token types
@@ -36,6 +37,10 @@ class tok {
     
     getText () {
         return this.getSite().getText();
+    }
+    
+    error ( msg ) {
+        return new error( this, msg );
     }
 };
 
