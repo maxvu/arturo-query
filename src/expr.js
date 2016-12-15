@@ -148,11 +148,11 @@ class tagp extends expr {
     }
     
     getAttr () {
-        return tokens[ 0 ].getText();
+        return this.getTokens()[ 0 ].getText();
     }
     
     getVal () {
-        return tokens[ 2 ].getText();
+        return this.getTokens()[ 2 ].getText();
     }
     
     negate () {
@@ -166,7 +166,8 @@ class tagp extends expr {
     }
     
     toString () {
-        return ( this._negated ? '-' : '' ) + `'${getAttr()}':'${getVal()}'`;
+        let neg = this._negated ? '-' : '';
+        return neg + `'${this.getAttr()}':'${this.getVal()}'`;
     }
 
 };
