@@ -29,6 +29,10 @@ class expr {
         return false;
     }
     
+    normalize () {
+        return this;
+    }
+    
 };
 
 // abstract recursive expression
@@ -64,6 +68,21 @@ class rcrs extends expr {
             return acc.concat([ child.toString() ]);
         }, [] ).join( this._infix );
         return outtermost ? '( ' + inner + ' )' : inner;
+    }
+    
+    normalize () {
+        // remove superfluous nesting
+        if ( this._children.length === 1 )
+            return this._children[ 0 ].normalize();
+        // promote like terms
+        return new this.constructor(
+            [].concat.apply( [], this._children.map( ( child ) => {
+                child = child.normalize();
+                return ( child.getType() === this.getType() )
+                    ? child.getChildren()
+                    : child;
+            } ) )
+        );
     }
     
 };

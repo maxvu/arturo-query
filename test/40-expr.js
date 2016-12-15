@@ -189,15 +189,55 @@ describe( 'expr', function () {
     
     } );
     
-    describe( 'toString()', function () {
-    
-        it( 'behaves', function () {
+    describe( 'normalize()', function () {
+        
+        it( 'should fold superflous conj nesting', function () {
+            (new expr.conj([
+                new expr.disj([
+                    new expr.conj([
+                        stub.term( 'a' )
+                    ])
+                ])
+            ])).normalize().should.deepEqual(
+                stub.term( 'a' )
+            );
+        } );
+        
+        it( 'should promote like expressions', function () {
+        
+            (new expr.conj([
+                new expr.disj([
+                    new expr.conj([
+                        stub.term( 'a' )
+                    ]),
+                    stub.term( 'b' ),
+                    stub.term( 'c' )
+                ])
+            ])).normalize().should.deepEqual(
+                (new expr.disj([
+                    stub.term( 'a' ),
+                    stub.term( 'b' ),
+                    stub.term( 'c' )
+                ]))
+            );
             
-            // TODO
+            ((new expr.disj([
+                stub.term( 'a' ),
+                new expr.disj([
+                    stub.term( 'b' ),
+                    stub.term( 'c' )
+                ])
+            ])).normalize()).should.deepEqual(
+                new expr.disj([
+                    stub.term( 'a' ),
+                    stub.term( 'b' ),
+                    stub.term( 'c' )
+                ])
+            );
             
         } );
-    
+        
     } );
-
+    
 } );
 
