@@ -1,6 +1,6 @@
 language: node_js
 node_js:
 - 'node'
-script: 'istanbul cover _mocha -- --recursive'
+script: 'istanbul cover ./node_modules/mocha/bin/_mocha -- --recursive'
 after_script:
   - "cat coverage/lcov.info | ./node_modules/.bin/coveralls"
