@@ -15,13 +15,14 @@
   ],
   "license": "MIT",
   "devDependencies": {
+    "coveralls": "^2.11.15",
     "mocha": "3.2.0",
     "should": "11.1.1"
   },
   "scripts": {
     "test": "mocha --check-leaks --sort",
     "debug": "mocha --check-leaks --sort --debug-brk",
-    "test-coverage" : "istanbul cover _mocha -- --recursive"
+    "test-coverage": "istanbul cover _mocha -- --recursive"
   },
   "dependencies": {
     "cartesian": "1.0.1"
