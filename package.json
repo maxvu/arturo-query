@@ -24,6 +24,6 @@
     "test-coverage" : "istanbul cover _mocha -- --recursive"
   },
   "dependencies": {
-    "cartesian": "^1.0.0"
+    "cartesian": "1.0.1"
   }
 }
