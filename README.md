@@ -3,6 +3,7 @@
 `arturo-query` is a parser for a simple, boolean-term full-text query syntax. It's intended to be both a preprocessor (e.g. to screen expensive queries) and augmentation (e.g. provide extra-search fields) for existing full-text stores.
 
 [![Build Status](https://travis-ci.org/maxvu/arturo-query.svg?branch=master)](https://travis-ci.org/maxvu/arturo-query)
+[![Coverage Status](https://coveralls.io/repos/github/maxvu/arturo-query/badge.svg?branch=master)](https://coveralls.io/github/maxvu/arturo-query?branch=master)
 
 ## Features
 
