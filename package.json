@@ -20,7 +20,8 @@
   },
   "scripts": {
     "test": "mocha --check-leaks --sort",
-    "debug": "mocha --check-leaks --sort --debug-brk"
+    "debug": "mocha --check-leaks --sort --debug-brk",
+    "test-coverage" : "istanbul cover _mocha -- --recursive"
   },
   "dependencies": {
     "cartesian": "^1.0.0"
