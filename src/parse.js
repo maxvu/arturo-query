@@ -105,8 +105,12 @@ module.exports = function parse ( input ) {
         input.splice( idx_oro, 0, new expr.disj([ triplet[ 0 ], triplet[ 2 ] ]) );
     }
     
-    // implicit AND
-    input = (new expr.conj( input )).normalize();
+    // clean it up
+    input = new expr.conj( input ).normalize();
+    
+    // all terms are implicitly AND'ed -- always return something recursive
+    if ( !input.isRecursive() )
+        input = new expr.conj([ input ]);
     
     return input;
 

@@ -203,6 +203,20 @@ describe( 'expr', function () {
             );
         } );
         
+        it( 'should fold superflous disj nesting', function () {
+            (new expr.disj([
+                new expr.disj([
+                    stub.term( 'a' )
+                ]),
+                stub.term( 'b' )
+            ])).normalize().should.deepEqual(
+                new expr.disj([
+                    stub.term( 'a' ),
+                    stub.term( 'b' )
+                ])
+            );
+        } );
+        
         it( 'should promote like expressions', function () {
         
             (new expr.conj([

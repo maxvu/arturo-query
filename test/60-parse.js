@@ -131,7 +131,7 @@ describe( 'parse()', function () {
     describe( 'negation', function () {
         
         it( 'should work', function () {
-            parse( lex( '!a' ) ).isNegated().should.be.true();
+            parse( lex( '!a' ) ).getChildren()[ 0 ].isNegated().should.be.true();
             parsedump( "!a" ).should.equal( parsedump( 'not a' ) );
         } );
         
