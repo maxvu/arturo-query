@@ -1,6 +1,10 @@
 'use strict';
 var token = require( './token' );
 
+/*
+    Parser-result expressions and query-constituent parts.
+*/
+
 const type_ids = {
     conj : 107,
     disj : 109,

@@ -3,6 +3,10 @@ var token = require( './token' );
 var lex = require( './lex' );
 var expr = require( './expr' );
 
+/*
+    Transform a list of lexer tokens into a expr-symbols.
+*/
+
 const T_NOT = 'not';
 const T_OR  = 'or';
 

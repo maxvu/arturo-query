@@ -1,6 +1,10 @@
 'use strict';
 var site = require( './site' );
 
+/*
+    A simple union with JS-standard Error with our site information.
+*/
+
 module.exports = class ParsingError extends Error {
 
     constructor ( site, message ) {

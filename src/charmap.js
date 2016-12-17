@@ -1,5 +1,9 @@
 'use strict';
 
+/*
+    A bunch of character constants, mostly used by lexer.
+*/
+
 module.exports = {
 
     // whitespace
