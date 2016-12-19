@@ -1,15 +1,39 @@
 'use strict';
 var token = require( './token' );
+var bucket = require( './bucket' );
 
 /*
     Parser-result expressions and query-constituent parts.
 */
 
+// enumerated expression types
 const type_ids = {
     conj : 107,
     disj : 109,
     term : 113,
     tagp : 127
+};
+
+// utilty function
+// given an array and a function that identifies like elements,
+//   find any pair in the original array that exists as both
+//   negated and not-negated
+// useful for izZeroSet() and isUniverse()
+let contradicting = ( entries, id_fn ) => {
+    let buckets = bucket( entries, id_fn );
+    for ( var key in buckets )
+        if ( buckets[ key ].length === 1 )
+            delete buckets[ key ];
+    for ( var key in buckets ) {
+        if ( buckets[ key ].some( ( entry ) => {
+            return entry.isNegated();
+        } ) && buckets[ key ].some( ( entry ) => {
+            return !entry.isNegated();
+        } ) ) {
+            return true;
+        }
+    }
+    return false;
 };
 
 // base, abstract expression
@@ -29,12 +53,24 @@ class expr {
         return this._tokens;
     }
     
+    // can this expression contain other expressions?
     isRecursive () {
         return false;
     }
     
+    // fold down to a standard form
     normalize () {
         return this;
+    }
+    
+    // does this query represent all queryable items?
+    isUniverse () {
+        return false;
+    }
+    
+    // is this query unsatisfiable?
+    isZeroSet () {
+        return false;
     }
     
 };
@@ -104,6 +140,41 @@ class conj extends rcrs {
             return child.negate();
         } ) );
     }
+    
+    isZeroSet () {
+        // conjunction with no terms is the zero set
+        // (empty queries meaning 'everything' can be fitted on later)
+        if ( this._children.length === 0 )
+            return true;
+        
+        // zero-sets with extra qualifiers are still zero sets
+        if ( this._children.some( ( child ) => {
+            return child.isZeroSet(); }
+        ) ) {
+            return true;
+        }
+        
+        // any contradicting terms? (e.g. 'a !a')
+        if ( contradicting( this._children, ( child ) => {
+            if ( child.getType() !== type_ids.term )
+                return; // discard -- don't compare
+            return child.getId();
+        } ) ) {
+            return true;
+        }
+        
+        // any contradicting tags? 'attr:val !attr:val'
+        if ( contradicting( this._children, ( child ) => {
+            if ( child.getType() !== type_ids.tagp )
+                return; // discard -- don't compare
+            console.log( child.getAttr() + ':' + child.getVal() );
+            return child.getAttr() + ':' + child.getVal();
+        } ) ) {
+            return true;
+        }
+
+        return false;
+    }
 
 };
 
@@ -119,6 +190,10 @@ class disj extends rcrs {
         return new conj( this._children.map ( ( child ) => {
             return child.negate()
         } ) );
+    }
+    
+    isZeroSet () {
+        return this.getChildren().length == 0;
     }
 
 };

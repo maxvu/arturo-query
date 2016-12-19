@@ -22,6 +22,13 @@ var stub = {
     },
     tag : function () {
         return new token.tag( new site( 0, 0, ':' ) );
+    },
+    tagp : function ( attr, val, negated ) {
+        return new expr.tagp([
+            stub.trm( attr ),
+            stub.tag(),
+            stub.trm( val )
+        ]);
     }
 };
 
@@ -249,6 +256,55 @@ describe( 'expr', function () {
                 ])
             );
             
+        } );
+        
+    } );
+    
+    describe( 'isZeroSet()', function () {
+
+        it( 'should be true for empty rcrs\'', function () {
+            (new expr.conj([])).isZeroSet().should.be.true();
+            (new expr.disj([])).isZeroSet().should.be.true();
+        } );
+        
+        it( 'should be true for descendant zero-set expressions', function () {
+            (new expr.conj([
+                stub.term( 'a' ),
+                stub.term( 'a' ).negate()
+            ])).isZeroSet().should.be.true();
+            (new expr.conj([
+                stub.tagp( 'attr', 'val' ),
+                stub.tagp( 'attr', 'val' ).negate(),
+            ])).isZeroSet().should.be.true();
+        } );
+        
+        it( 'should be false for a tag pair differing in value', function () {
+            (new expr.conj([
+                stub.tagp( 'attr', 'val' ),
+                stub.tagp( 'attr', 'some-other-val' ).negate(),
+            ])).isZeroSet().should.be.false();
+        } );
+        
+        it( 'should be true for descendant zero-set expressions', function () {
+            (new expr.conj([
+                new expr.conj([
+                    stub.term( 'a' ),
+                    stub.term( 'a' ).negate()
+                ]),
+                stub.term( 'b' )
+            ])).isZeroSet().should.be.true();
+        } );
+        
+        it( 'should be false for non-contradicting queries', function () {
+            (new expr.conj([
+                stub.term( 'a' )
+            ])).isZeroSet().should.be.false();
+        } );
+        
+        it( 'should be false for disjunctions of size > 0', function () {
+            (new expr.disj([
+                stub.term( 'b' )
+            ])).isZeroSet().should.be.false();
         } );
         
     } );
