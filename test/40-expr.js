@@ -267,7 +267,7 @@ describe( 'expr', function () {
             (new expr.disj([])).isZeroSet().should.be.true();
         } );
         
-        it( 'should be true for descendant zero-set expressions', function () {
+        it( 'should be true with contradicting conjunctive terms and tags', function () {
             (new expr.conj([
                 stub.term( 'a' ),
                 stub.term( 'a' ).negate()
@@ -305,6 +305,45 @@ describe( 'expr', function () {
             (new expr.disj([
                 stub.term( 'b' )
             ])).isZeroSet().should.be.false();
+        } );
+        
+    } );
+    
+    describe( 'isUniverse()', function () {
+
+        it( 'should be false in the normal case\'', function () {
+            (new expr.conj([])).isUniverse().should.be.false();
+            (new expr.disj([])).isUniverse().should.be.false();
+        } );
+        
+        it( 'should be true for contradicting disjunctive terms', function () {
+            (new expr.disj([
+                stub.term( 'a' ),
+                stub.term( 'a' ).negate()
+            ])).isUniverse().should.be.true();
+        } );
+        
+        it( 'should be false for a tag pair differing in value', function () {
+            (new expr.disj([
+                stub.tagp( 'attr', 'val' ),
+                stub.tagp( 'attr', 'some-other-val' ).negate(),
+            ])).isUniverse().should.be.false();
+        } );
+        
+        it( 'should be true for descendant universal expressions', function () {
+            (new expr.conj([
+                new expr.disj([
+                    stub.term( 'a' ),
+                    stub.term( 'a' ).negate()
+                ]),
+                stub.term( 'b' )
+            ])).isUniverse().should.be.true();
+        } );
+        
+        it( 'should be false for non-contradicting queries', function () {
+            (new expr.disj([
+                stub.term( 'a' )
+            ])).isUniverse().should.be.false();
         } );
         
     } );

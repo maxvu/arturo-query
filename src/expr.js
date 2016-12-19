@@ -14,28 +14,6 @@ const type_ids = {
     tagp : 127
 };
 
-// utilty function
-// given an array and a function that identifies like elements,
-//   find any pair in the original array that exists as both
-//   negated and not-negated
-// useful for izZeroSet() and isUniverse()
-let contradicting = ( entries, id_fn ) => {
-    let buckets = bucket( entries, id_fn );
-    for ( var key in buckets )
-        if ( buckets[ key ].length === 1 )
-            delete buckets[ key ];
-    for ( var key in buckets ) {
-        if ( buckets[ key ].some( ( entry ) => {
-            return entry.isNegated();
-        } ) && buckets[ key ].some( ( entry ) => {
-            return !entry.isNegated();
-        } ) ) {
-            return true;
-        }
-    }
-    return false;
-};
-
 // base, abstract expression
 class expr {
 
@@ -68,7 +46,7 @@ class expr {
         return false;
     }
     
-    // is this query unsatisfiable?
+    // does this query represent the zero-set?
     isZeroSet () {
         return false;
     }
@@ -125,6 +103,56 @@ class rcrs extends expr {
         );
     }
     
+    hasContradictingTerms () { // e.g. "a !a"
+        let terms = bucket( this._children, ( child ) => {
+            if ( child.getType() === type_ids.term )
+                return child.getId();
+            return null;
+        } );
+        for ( var id in terms ) {
+            if ( terms[ id ].some( ( t ) => {
+                return t.isNegated();
+            } ) && terms[ id ].some( ( t ) => {
+                return !t.isNegated();
+            } ) ) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    hasContradictingTags () { // e.g. "attr:val !attr:val"
+        let tags = bucket( this._children, ( child ) => {
+            if ( child.getType() === type_ids.tagp )
+                return child.getAttr() + ':' + child.getVal();
+            return null;
+        } );
+        for ( var id in tags ) {
+            if ( tags[ id ].some( ( t ) => {
+                return t.isNegated();
+            } ) && tags[ id ].some( ( t ) => {
+                return !t.isNegated();
+            } ) ) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    // does this query represent all queryable items?
+    isUniverse () {
+        return this._children.some( ( child ) => {
+            return child.isUniverse();
+        } );
+    }
+    
+    // is this query unsatisfiable?
+    isZeroSet () {
+        return this._children.some( ( child ) => {
+            return child.isZeroSet();
+        } );
+    }
+    
 };
 
 class conj extends rcrs {
@@ -148,30 +176,11 @@ class conj extends rcrs {
             return true;
         
         // zero-sets with extra qualifiers are still zero sets
-        if ( this._children.some( ( child ) => {
-            return child.isZeroSet(); }
-        ) ) {
+        if ( super.isZeroSet() )
             return true;
-        }
         
-        // any contradicting terms? (e.g. 'a !a')
-        if ( contradicting( this._children, ( child ) => {
-            if ( child.getType() !== type_ids.term )
-                return; // discard -- don't compare
-            return child.getId();
-        } ) ) {
+        if ( this.hasContradictingTerms() || this.hasContradictingTags() )
             return true;
-        }
-        
-        // any contradicting tags? 'attr:val !attr:val'
-        if ( contradicting( this._children, ( child ) => {
-            if ( child.getType() !== type_ids.tagp )
-                return; // discard -- don't compare
-            console.log( child.getAttr() + ':' + child.getVal() );
-            return child.getAttr() + ':' + child.getVal();
-        } ) ) {
-            return true;
-        }
 
         return false;
     }
@@ -194,6 +203,12 @@ class disj extends rcrs {
     
     isZeroSet () {
         return this.getChildren().length == 0;
+    }
+    
+    isUniverse () {
+        if ( super.isUniverse() )
+            return true;
+        return this.hasContradictingTerms();
     }
 
 };
