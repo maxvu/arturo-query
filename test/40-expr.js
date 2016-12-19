@@ -196,6 +196,52 @@ describe( 'expr', function () {
     
     } );
     
+    describe( 'toString()', function () {
+    
+        it( 'terms are double-quoted', function () {
+            stub.term( 'alpha' ).toString().should.equal( '"alpha"' );
+        } );
+        
+        it( 'conj - without toString() arg, produces parens', function () {
+            (new expr.conj([
+                stub.term( 'beta' )
+            ])).toString().should.equal('( "beta" )');
+        } );
+        
+        it( 'conj - /with/ toString() arg, does not produce parens', function () {
+            (new expr.conj([
+                stub.term( 'beta' )
+            ])).toString( 1 ).should.equal('"beta"');
+        } );
+        
+        it( 'tags are separated by colon', function () {
+            stub.tagp( 'attr', 'val' ).toString().should.equal( '"attr":"val"' );
+        } );
+        
+        it( 'terms, negated, get a dash', function () {
+            stub.term( 'alpha' ).negate().toString().should.equal( '-"alpha"' );
+        } );
+        
+        it( 'tags, negated, get a dash', function () {
+            stub.tagp( 'attr', 'val' ).negate().toString().should.equal( '-"attr":"val"' );
+        } );
+        
+        it( 'expressions get parens', function () {
+            (new expr.conj([
+                stub.term( 'a' ),
+                stub.term( 'b' )
+            ])).toString().should.equal('( "a" "b" )');
+        } );
+        
+        it( 'disjunctions are infixed with "OR"', function () {
+            (new expr.disj([
+                stub.term( 'a' ),
+                stub.term( 'b' )
+            ])).toString().should.equal('( "a" OR "b" )');
+        } );
+
+    } );
+    
     describe( 'normalize()', function () {
         
         it( 'should fold superflous conj nesting', function () {

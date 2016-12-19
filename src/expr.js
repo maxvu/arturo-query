@@ -85,7 +85,7 @@ class rcrs extends expr {
         let inner = this._children.reduce( ( acc, child ) => {
             return acc.concat([ child.toString() ]);
         }, [] ).join( this._infix );
-        return outtermost ? '( ' + inner + ' )' : inner;
+        return outtermost ? inner : '( ' + inner + ' )';
     }
     
     normalize () {
@@ -289,7 +289,7 @@ class tagp extends expr {
     
     toString () {
         let neg = this._negated ? '-' : '';
-        return neg + `'${this.getAttr()}':'${this.getVal()}'`;
+        return neg + `"${this.getAttr()}":"${this.getVal()}"`;
     }
 
 };
