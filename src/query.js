@@ -132,8 +132,6 @@ module.exports = class query {
         //   - an 'expr' with no children is zero set
         //   - a 'query' with no subqueries is the universe
         
-        //console.log( require('util').inspect( new expr.conj(this._subqueries).normalize(), {depth:10} ) );
-        
         return (
             !this._subqueries.length ||
             this.toDisjunction().normalize().isUniverse()
