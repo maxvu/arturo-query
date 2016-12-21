@@ -15,6 +15,7 @@
   ],
   "license": "MIT",
   "devDependencies": {
+    "browserify": "^13.1.1",
     "coveralls": "^2.11.15",
     "istanbul": "^0.4.5",
     "mocha": "3.2.0",
@@ -23,7 +24,8 @@
   "scripts": {
     "test": "mocha --check-leaks --sort",
     "debug": "mocha --check-leaks --sort --debug-brk",
-    "test-coverage": "istanbul cover _mocha -- --recursive"
+    "test-coverage": "istanbul cover _mocha -- --recursive",
+    "browserify" : "./node_modules/browserify/bin/cmd.js -e index.js -o browser/arturo-query.js"
   },
   "dependencies": {
     "cartesian": "1.0.1"
