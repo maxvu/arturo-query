@@ -51,6 +51,12 @@ describe( 'parse()', function () {
             ).should.equal( parsedump( 'a | b' ) );
         } );
         
+        it( 'should ignore ANDs', function () {
+            parsedump(
+                'a and b or c'
+            ).should.equal( parsedump( 'a b | c' ) );
+        } );
+        
     } );
 
     describe( 'quoted terms', function () {

@@ -9,6 +9,7 @@ var expr = require( './expr' );
 
 const T_NOT = 'not';
 const T_OR  = 'or';
+const T_AND = 'and';
 
 module.exports = function parse ( input ) {
 
@@ -23,6 +24,13 @@ module.exports = function parse ( input ) {
         return !(
             tk instanceof token.wts ||
             tk instanceof token.quo
+        );
+    } );
+ 
+    // remove all bare 'and's
+    input = input.filter( ( tk ) => {
+        return !(
+            tk instanceof token.trm && tk.getText().toLowerCase() === T_AND
         );
     } );
     
