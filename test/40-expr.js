@@ -324,6 +324,45 @@ describe( 'expr', function () {
             
         } );
         
+        it( 'should remove duplicate terms', function () {
+            (new expr.conj([
+                stub.term( 'bazooka' ),
+                stub.term( 'bazooka' ),
+                stub.term( 'bazooka' )
+            ])).normalize().should.deepEqual(new expr.conj([
+                stub.term( 'bazooka' )
+            ]));
+            
+            (new expr.conj([
+                stub.term( 'bazooka' ),
+                stub.term( 'bazooka' )
+            ])).normalize().should.deepEqual(new expr.conj([
+                stub.term( 'bazooka' )
+            ]));
+        } );
+        
+        it( 'should remove tags of equal attr and value', function () {
+            (new expr.conj([
+                stub.tagp( 'someattr', 'someval' ),
+                stub.tagp( 'someattr', 'someval' ),
+                stub.tagp( 'someattr', 'someval' )
+            ])).normalize().should.deepEqual(new expr.conj([
+                stub.tagp( 'someattr', 'someval' )
+            ]));
+        } );
+        
+        it( 'should not remove tags of differing attr or value', function () {
+            (new expr.conj([
+                stub.tagp( 'someattr', 'someval' ),
+                stub.tagp( 'someattr', 'someotherval' ),
+                stub.tagp( 'someotherattr', 'someval' )
+            ])).normalize().should.deepEqual(new expr.conj([
+                stub.tagp( 'someattr', 'someval' ),
+                stub.tagp( 'someattr', 'someotherval' ),
+                stub.tagp( 'someotherattr', 'someval' )
+            ]));
+        } );
+        
     } );
     
     describe( 'isZeroSet()', function () {

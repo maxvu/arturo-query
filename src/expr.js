@@ -88,6 +88,22 @@ class rcrs extends expr {
         return outtermost ? inner : '( ' + inner + ' )';
     }
     
+    // remove redundant terms and tags
+    makeUnique () {
+        let buckets = bucket( this._children, ( child ) => {
+            return child.toString();
+        } );
+        for ( var e in buckets ) {
+            if ( buckets[ e ].length === 1 )
+                continue;
+            while ( buckets[ e ].length > 1 ) {
+                let to_remove = this._children.indexOf( buckets[ e ].pop() );
+                this._children.splice( to_remove, 1 );
+            }
+        }
+        return this;
+    }
+    
     normalize () {
         // remove superfluous nesting
         if ( this._children.length === 1 )
@@ -100,7 +116,7 @@ class rcrs extends expr {
                     ? child.getChildren()
                     : child;
             } ) )
-        );
+        ).makeUnique();
     }
     
     hasContradictingTerms () { // e.g. "a !a"
