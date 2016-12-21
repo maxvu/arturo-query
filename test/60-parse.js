@@ -148,6 +148,7 @@ describe( 'parse()', function () {
         
         it( 'should work several times in a row', function () {
             parse( lex( '!!!!!a' ) ).getChildren()[ 0 ].isNegated().should.be.true();
+            parse( lex( '!!!!a' ) ).getChildren()[ 0 ].isNegated().should.be.false();
             parsedump( "!a" ).should.equal( parsedump( 'not a' ) );
         } );
         

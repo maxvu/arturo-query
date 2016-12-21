@@ -245,7 +245,7 @@ class term extends expr {
     
     negate () {
         let ng = new term( this.getTokens()[ 0 ] );
-        ng._negated = true;
+        ng._negated = !this._negated;
         return ng;
     }
     
