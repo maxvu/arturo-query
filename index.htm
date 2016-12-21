@@ -13,6 +13,7 @@
                 font-family: 'PT Mono', monospace;
                 width: 700px;
                 margin: auto;
+                box-sizing: border-box;
             }
             h1 {
                 color: inherit;
@@ -20,15 +21,103 @@
                 color: #7FBE44;
             }
             
+            h2 {
+
+            }
+            
             #demo-spotlight {
-                font-size: 200%;
-                padding: 0.75em;
-                width: 100%;
+                font-size: 150%;
+                width: 94%;
+                padding: 3%;
                 font-family: inherit;
                 color: inherit;
-                background-color: inherit;
-                border: 1px solid #eee;
+                background-color: rgba( 255, 255, 255, 0.04 );
+                border: 0;
+                border-bottom: 1px solid #eee;
             }
+            
+            #q-input {
+                font-size: 125%;
+            }
+            
+            #lex-output {
+                font-size: 150%;
+                overflow: auto;
+            }
+            
+            .inline-error {
+                background-color: #DE0235;
+            }
+            
+            .error-desc {
+                font-size: 75%;
+                display: block;
+            }
+            
+            .aq-token {
+                padding: 3px;
+                border: 1px solid #555;
+                position: relative;
+                margin-right: 3px;
+                float: left;
+            }
+            
+            .aq-tokenlabel {
+                font-size: 50%;
+            }
+            
+            .aq-token-neg { background-color: rgba( 120, 20, 20, 0.3 ); }
+            .aq-token-trm { background-color: rgba( 30, 20, 120, 0.3 ); }
+            .aq-token-wts { background-color: rgba( 80, 80, 80, 0.3 ); }
+            
+            #parse-output {
+            }
+            
+            .aq-expr {
+                padding: 10px;
+                margin: 10px;
+                border: 1px solid #eee;
+                margin: 0 5px 5px 0;
+            }
+            
+            .aq-expr-conj {
+                background-color: #b77519;
+            }
+            
+            .aq-expr-disj {
+                background-color: #490f66;
+            }
+            
+            .aq-expr-term {
+                background-color: #4250f4;
+            }
+            
+            .aq-expr-tagp {
+                background-color: #205655;
+            }
+            
+            a { color: inherit; text-decoration: none; }
+            a:hover { background-color: #57822F; }
+            
+            #hints { overflow:auto; margin-bottom: 10px; }
+            #hints * { float: left; }
+            #hints a {
+                display: block;
+                padding: 4px;
+                background-color: rgba(255,255,255,0.1);
+                margin: 0 4px 4px 0;
+            }
+            #hints a:hover { background-color: #57822F; }
+            
+            .blurb {
+                color: #888;
+            }
+            
+            body > footer {
+                margin-top: 50px;
+            }
+            
+            
         </style>
     </head>
     <body>
@@ -37,26 +126,184 @@
             <h2></h2>
         </header>
         <section id="demo">
-            <input type="text" id="demo-spotlight" placeholder="e.g. not ( planes or trains )">
-            
-            <h2>Parsed and styled</h2>
+            <input type="text" id="demo-spotlight" placeholder="e.g. not ( planes or trains )" value="!( rain or shine )">
+                <span style="float:left;">Try:</span>
+            <div id="hints">
+                <a href="#">A</a>
+                <a href="#">A B</a>
+                <a href="#">A or B</a>
+                <a href="#">A | B </a>
+                <a href="#">not A</a>
+                <a href="#">A -B</a>
+                <a href="#">! A</a>
+                <a href="#">"A"</a>
+                <a href="#">'A'</a>
+                <a href="#">"A B"</a>
+                <a href="#">A B or C</a>
+                <a href="#">!( A or B or C )</a>
+                <a href="#">!( A | B | C )</a>
+                <a href="#">!( A and B and C )</a>
+                <a href="#">day:6 ( month:jan | month:jun ) times</a>
+                <a href="#">!day:6</a>
+                <a href="#">not not not not not black</a>
+                <a href="#">( ( ( A ) ( !B ( ( ) C ) ) ) )</a>
+                <a href="#">or a</a>
+                <a href="#">a or</a>
+                <a href="#">a !</a>
+                <a href="#">( e</a>
+                <a href="#"> f )</a>
+                <a href="#">():a</a>
+                <a href="#">a:()</a>
+            </div>
             
             <h2>Lexer output</h2>
+            <p class="blurb">Pick out tokens</p>
+            <div id="lex-output"></div>
             
             <h2>Parser output</h2>
+            <p class="blurb">Remove superfluous nesting, promote like terms, pick out AND and NOT and OR, distribute negation</p>
+            <div id="parse-output"></div>
             
-            <h2>Parser output</h2>
+            <h2>Final output</h2>
+            <p class="blurb">cartesian product of disjunctive terms, as an OR() of AND()'s</p>
+            <div id="final-output"></div>
             
         </section>
         <footer>
+            <em>This demo makes generous use of JS ES6 features and probably won't work on all but the newest browsers.</em>
         </footer>
         
         <script type="text/javascript">
         
+            /*
+                this was thrown together very quickly
+                   ...please don't think less of me :(
+            */
+        
+            function error_site ( q, ex ) {
+                let begin = ex.getSite().getBegin();
+                let end = ex.getSite().getEnd();
+                let pre = q.slice( 0, begin );
+                let inside = q.slice( begin, end + 1 );
+                let post = q.slice( end + 1 );
+                console.log( post );
+                return `
+                    ${pre}
+                    <span class="inline-error">
+                        ${inside}
+                    </span>
+                    ${post}
+                    <span class="error-desc">
+                        ${ex.getReport()}
+                    </span>
+                `;
+            }
+        
+            function lexdump ( q ) {
+                let lexed;
+                try {
+                    lexed = arturo_query.lex( q );
+                } catch ( ex ) {
+                    if ( ex instanceof arturo_query.error ) {
+                        return error_site( q, ex );
+                    } else
+                        return `<span class="error">ERROR: ${ex.message}</span>`;
+                }
+                return lexed.map( ( tk ) => {
+                    return `
+                        <div class="aq-token aq-token-${tk.constructor.name}">
+                            <div class="aq-tokenlabel">${tk.constructor.name}</div>
+                            <pre class="aq-tokentext">${tk.getText()}</pre>
+                        </div>
+                    `;
+                } );
+            }
+            
+            function exprdump ( expr ) {
+                let type = expr.constructor.name;
+                let neg = expr.isNegated() ? 'aq-exprneg' : '';
+                let buf = `<div class="aq-expr aq-expr-${type} ${neg}">`;
+                if (
+                    expr.getType() === arturo_query.expr.type_ids.conj ||
+                    expr.getType() === arturo_query.expr.type_ids.disj
+                ) {
+                    if ( expr.getType() === arturo_query.expr.type_ids.conj )
+                        buf += '<span>AND</span>';                    
+                    else
+                        buf += '<span>OR</span>';
+                    expr.getChildren().forEach( ( child ) => {
+                        buf += exprdump( child );
+                    } );
+                    buf += `</div>`;
+                    return buf;
+                } else if ( expr.getType() === arturo_query.expr.type_ids.term ) {
+                    if ( expr.isNegated() ) buf += 'not ';
+                    buf += 'term(' + expr.getId() + ')';
+
+                } else if ( expr.getType() === arturo_query.expr.type_ids.tagp ) {
+                    if ( expr.isNegated() ) buf += 'not ';
+                    buf += `tag(${expr.getAttr()}:${expr.getVal()})`;
+                }
+                buf += `</div>`;
+                return buf;
+            }
+            
+            function parsedump ( q ) {
+                let parsed;
+                try {
+                    parsed = arturo_query.parse( arturo_query.lex( q ) );
+                } catch ( ex ) {
+                    if ( ex instanceof arturo_query.error )
+                        return error_site( q, ex );
+                    else
+                        return `<span class="error">ERROR: ${ex.message}</span>`;
+                }
+                return `<pre>${exprdump( parsed )}</pre>`;
+            }
+            
+            function querydump ( q ) {
+                let query;
+                try {
+                    query = new arturo_query.query( q );
+                } catch ( ex ) {
+                    if ( ex instanceof arturo_query.error )
+                        return error_site( q, ex );
+                    else
+                        return `<span class="error">ERROR: ${ex.message}</span>`;
+                }
+                return exprdump( query.toDisjunction() );
+            }
+        
+            function search ( q ) {
+                
+                $( '#lex-output' ).html( lexdump( q ) );
+                $( '#parse-output' ).html( parsedump( q ) );
+                $( '#final-output' ).html( querydump( q ) );
+            }
+        
             $( () => {
                 
+                var watcher;
+                $( '#demo-spotlight' ).keyup( ( ev ) => {
+                    clearTimeout( watcher );
+                    var query = ev.target.value;
+                    watcher = setTimeout( () => {
+                        search( query );
+                    }, 25 );
+                } );
+                
+                $( '#demo-spotlight' ).trigger( 'keyup' );
+                
+                $( '#hints a' ).click( ( ev ) => {
+                    $( '#demo-spotlight' ).val( ev.target.text );
+                    ev.preventDefault();
+                    $( '#demo-spotlight' ).trigger( 'keyup' );
+                } );
+                
             } );
+            
         
         </script>
     </body>
 </html>
+
