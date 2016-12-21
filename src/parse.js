@@ -4,7 +4,7 @@ var lex = require( './lex' );
 var expr = require( './expr' );
 
 /*
-    Transform a list of lexer tokens into a expr-symbols.
+    Transform a list of lexer tokens into some recursive expression.
 */
 
 const T_NOT = 'not';
@@ -82,12 +82,16 @@ module.exports = function parse ( input ) {
             }
         }
         if ( expectRpr )
+            // this needs to be caught in the call above this one in order to
+            // identify the token that caused this error --
+            // this is handled by the try/catch above
             throw new Error( "Unbalanced paren" );
         return output;
     }
     input = ps_expr( input );
     
     // apply negation
+    // needs to happen backwards because it's easier to implement right-assoc.
     var idx_neg;
     if ( input[ input.length - 1 ] instanceof token.neg )
         throw input[ input.length - 1 ].error( "Stray negator" );

@@ -91,6 +91,7 @@ module.exports = class query {
             if ( !disjunctives.length ) {
             
                 // if there are no disjunctive terms, there is just one query
+                
                 this._subqueries = [ new expr.conj( conjunctives ) ];
                 
             } else {

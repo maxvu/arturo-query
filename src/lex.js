@@ -20,6 +20,7 @@ module.exports = ( raw ) => {
         output.push( new token.wts( input.extract() ) );
     }
     
+    // lex bare terms
     function lx_trm () {
         while (
             !input.scan( charmap.trm.int ) &&
@@ -31,6 +32,7 @@ module.exports = ( raw ) => {
         output.push( new token.trm( input.extract() ) );
     }
     
+    // lex quoted terms
     function lx_quo () {
         let opening_quote = new token.quo( input.step().extract() );
         while ( !input.done() && !input.scan( opening_quote.getText() ) )
