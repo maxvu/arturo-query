@@ -1,7 +1,14 @@
-var query = require( './src/query' );
+var query = 
 
-module.exports = ( txt_query ) => {
+module.exports = {
 
-    return (new query( txt_query ) );
-    
+    charmap : require( './src/charmap' ),
+    error   : require( './src/error' ),
+    expr    : require( './src/expr' ),
+    lex     : require( './src/lex' ),
+    parse   : require( './src/parse' ),
+    query   : require( './src/query' ),
+    site    : require( './src/site' ),
+    token   : require( './src/token' )
+
 };
