@@ -107,7 +107,7 @@ module.exports = function parse ( input ) {
         if ( idx_oro === 0 || idx_oro === input.length - 1 )
             throw input[ idx_oro ].error( "Unpaired OR operator" );
         let triplet = input.splice( idx_oro - 1, 3 );
-        input.splice( idx_oro, 0, new expr.disj([ triplet[ 0 ], triplet[ 2 ] ]) );
+        input.splice( idx_oro - 1, 0, new expr.disj([ triplet[ 0 ], triplet[ 2 ] ]) );
     }
     
     // clean it up
