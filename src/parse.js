@@ -68,7 +68,12 @@ module.exports = function parse ( input ) {
         while ( input.length ) {
             let curr = input.shift();
             if ( curr instanceof token.lpr ) {
-                let subexpr = parse( ps_expr( input, true ) );
+                let subexpr;
+                try {
+                    subexpr = parse( ps_expr( input, true ) );
+                } catch ( ex ) {
+                    throw curr.error( ex.message );
+                }
                 output.push( subexpr );
             } else if ( curr instanceof token.rpr ) {
                 if ( !expectRpr )
