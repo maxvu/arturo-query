@@ -34,6 +34,13 @@ var stub = {
 
 describe( 'expr', function () {
 
+    it( 'should accept only an Array', function () {
+        ( () => { return new expr.disj(); } ).should.throw();
+        ( () => { return new expr.conj( 1 ); } ).should.throw();
+        ( () => { return new expr.disj( new Date ); } ).should.throw();
+        ( () => { return new expr.conj( {} ); } ).should.throw();
+    } );
+
     describe( 'term', function () {
     
         it( 'should identify as a "term"', function () {
@@ -91,10 +98,13 @@ describe( 'expr', function () {
         ]);
         
         it( 'should only accept a trm-tag-trm triplet', function () {
+        
+            // not an array
             ( () => {
                 new expr.tagp();
             } ).should.throw();
             
+            // not size 3
             ( () => {
                 new expr.tagp([]);
             } ).should.throw();
@@ -102,6 +112,16 @@ describe( 'expr', function () {
             ( () => {
                 new expr.tagp([ new token.oro( sub.site( '|' ) ) ]);
             } ).should.throw();
+            
+            // wrong types
+            ( () => {
+                new expr.tagp([
+                    new token.oro( sub.site( '|' ) ),
+                    new token.oro( sub.site( '|' ) ),
+                    new token.oro( sub.site( '|' ) )
+                ]);
+            } ).should.throw();
+            
         } );
         
         it( 'should report as type "tagp"', function () {
@@ -377,6 +397,7 @@ describe( 'expr', function () {
         } );
         
         it( 'should be true for descendant universal expressions', function () {
+        
             (new expr.conj([
                 new expr.disj([
                     stub.term( 'a' ),
@@ -384,6 +405,15 @@ describe( 'expr', function () {
                 ]),
                 stub.term( 'b' )
             ])).isUniverse().should.be.true();
+            
+            (new expr.disj([
+                new expr.disj([
+                    stub.term( 'a' ),
+                    stub.term( 'a' ).negate()
+                ]),
+                stub.term( 'b' )
+            ])).isUniverse().should.be.true();
+            
         } );
         
         it( 'should be false for non-contradicting queries', function () {

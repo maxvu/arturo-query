@@ -36,6 +36,11 @@ describe( 'parse()', function () {
             ( () => { parse( lex( '!abc' ) ); } ).should.not.throw();
         } );
         
+        it( 'should not accept anything else', function () {
+            ( () => { parse( 1 ); } ).should.throw();
+            ( () => { parse( new Date ); } ).should.throw();
+        } );
+        
     } );
     
     describe( 'bare terms', function () {
@@ -130,8 +135,13 @@ describe( 'parse()', function () {
 
     describe( 'negation', function () {
         
-        it( 'should work', function () {
+        it( 'should work (at all)', function () {
             parse( lex( '!a' ) ).getChildren()[ 0 ].isNegated().should.be.true();
+            parsedump( "!a" ).should.equal( parsedump( 'not a' ) );
+        } );
+        
+        it( 'should work several times in a row', function () {
+            parse( lex( '!!!!!a' ) ).getChildren()[ 0 ].isNegated().should.be.true();
             parsedump( "!a" ).should.equal( parsedump( 'not a' ) );
         } );
         
@@ -139,6 +149,11 @@ describe( 'parse()', function () {
             parsedump(
                 '!( a or b )'
             ).should.equal( parsedump( '!a !b' ) );
+        } );
+        
+        it( 'should throw when at end of string', function () {
+            ( () => { parsedump( 'a !' ); } ).should.throw();
+            ( () => { parsedump( 'a not' ); } ).should.throw();
         } );
         
     } );

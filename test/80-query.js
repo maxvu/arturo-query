@@ -20,6 +20,19 @@ describe( 'query', function () {
         new query( 'a or b' );
     } );
     
+    it( 'should enforce string length limit', function () {
+        ( () => { new query( 'a or b'.repeat( 128 ) ); } ).should.throw();
+        ( () => {
+            new query( 'a or b', { max_query_length : 2 } );
+        } ).should.throw();
+    } );
+    
+    it( 'should enforce subquery count limit', function () {
+        ( () => {
+            new query( '( a | b | c | d | e ) ( 1 | 2 | 3 )' );
+        } ).should.throw( /subquer(y|ies)/ );
+    } );
+    
     it( 'should correctly dissect disjunctives', function () {
     
         // no disjunctives
@@ -90,6 +103,13 @@ describe( 'query', function () {
         (new query( 'a | b !c' )).toString().should.equal(
             (new query( '(a or b) not c' )).toString()
         );
+    } );
+    
+    describe( 'getSubqueries() returns a list', function () {
+        
+        (new query( '' )).getSubqueries().should.be.an.Array();
+        (new query( 'a|b' )).getSubqueries().should.be.an.Array();
+        
     } );
     
 } );
