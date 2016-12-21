@@ -91,12 +91,11 @@ module.exports = function parse ( input ) {
     
     // apply negation
     var idx_neg;
-    while ( ( idx_neg = input.findIndex( ( tk ) => {
-        return tk instanceof token.neg;
-    } ) ) !== -1 ) {
-        if ( idx_neg === input.length - 1 )
-            throw input[ idx_neg ].error( "Stray negator" );
-        input.splice( idx_neg, 2, input[ idx_neg + 1 ].negate() );
+    if ( input[ input.length - 1 ] instanceof token.neg )
+        throw input[ input.length - 1 ].error( "Stray negator" );
+    for ( var idx_neg = input.length - 2; idx_neg >= 0; idx_neg-- ) {
+        if ( input[ idx_neg ] instanceof token.neg )
+            input.splice( idx_neg, 2, input[ idx_neg + 1 ].negate() );
     }
     
     // combine OR'ed expressions
