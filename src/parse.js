@@ -57,8 +57,6 @@ module.exports = function parse ( input ) {
             triplet[ 1 ],
             triplet[ 2 ].getTokens()[ 0 ]
         ]);
-        if ( triplet[ 0 ].isNegated() )
-            tag = tag.negate();
         input.splice( idx_tag - 1, 0, tag );
     }
     
