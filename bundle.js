@@ -1,13 +1,4 @@
-(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var query = require( './src/query' );
-
-module.exports = ( txt_query ) => {
-
-    return (new query( txt_query ) );
-    
-};
-
-},{"./src/query":10}],2:[function(require,module,exports){
+(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.query = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 var extend = require('xtend/immutable');
 
 // Public API
@@ -93,7 +84,7 @@ function store(obj, elem, key)
   Array.isArray(obj) ? obj.push(elem) : (obj[key] = elem);
 }
 
-},{"xtend/immutable":3}],3:[function(require,module,exports){
+},{"xtend/immutable":2}],2:[function(require,module,exports){
 module.exports = extend
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
@@ -114,7 +105,7 @@ function extend() {
     return target
 }
 
-},{}],4:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
 'use strict';
 
 /*
@@ -142,7 +133,7 @@ module.exports = ( arr, sort ) => {
 };
 
 
-},{}],5:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 'use strict';
 
 /*
@@ -187,7 +178,7 @@ module.exports = {
 };
 
 
-},{}],6:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 'use strict';
 var site = require( './site' );
 
@@ -214,7 +205,7 @@ module.exports = class ParsingError extends Error {
 };
 
 
-},{"./site":11}],7:[function(require,module,exports){
+},{"./site":10}],6:[function(require,module,exports){
 'use strict';
 var token = require( './token' );
 var bucket = require( './bucket' );
@@ -538,7 +529,7 @@ module.exports = {
 };
 
 
-},{"./bucket":4,"./token":13}],8:[function(require,module,exports){
+},{"./bucket":3,"./token":12}],7:[function(require,module,exports){
 'use strict';
 var site = require( './site' );
 var token = require( './token' );
@@ -613,7 +604,7 @@ module.exports = ( raw ) => {
 
 
 
-},{"./charmap":5,"./site":11,"./stream":12,"./token":13}],9:[function(require,module,exports){
+},{"./charmap":4,"./site":10,"./stream":11,"./token":12}],8:[function(require,module,exports){
 'use strict';
 var token = require( './token' );
 var lex = require( './lex' );
@@ -746,7 +737,7 @@ module.exports = function parse ( input ) {
 
 };
 
-},{"./expr":7,"./lex":8,"./token":13}],10:[function(require,module,exports){
+},{"./expr":6,"./lex":7,"./token":12}],9:[function(require,module,exports){
 'use strict';
 var expr = require( './expr' );
 var parse = require( './parse' );
@@ -902,7 +893,7 @@ module.exports = class query {
 };
 
 
-},{"./expr":7,"./parse":9,"cartesian":2}],11:[function(require,module,exports){
+},{"./expr":6,"./parse":8,"cartesian":1}],10:[function(require,module,exports){
 'use strict';
 var error = require( './error' );
 
@@ -938,7 +929,7 @@ module.exports = class site {
 };
 
 
-},{"./error":6}],12:[function(require,module,exports){
+},{"./error":5}],11:[function(require,module,exports){
 'use strict';
 var site = require( './site.js' );
 
@@ -998,7 +989,7 @@ module.exports = class stream {
 };
 
 
-},{"./site.js":11}],13:[function(require,module,exports){
+},{"./site.js":10}],12:[function(require,module,exports){
 'use strict';
 var site = require( './site' );
 var charmap = require( './charmap' );
@@ -1122,4 +1113,14 @@ module.exports = {
     type_ids : type_ids
 };
 
-},{"./charmap":5,"./error":6,"./site":11}]},{},[1]);
+},{"./charmap":4,"./error":5,"./site":10}],"/index.js":[function(require,module,exports){
+var query = require( './src/query' );
+
+module.exports = ( txt_query ) => {
+
+    return (new query( txt_query ) );
+    
+};
+
+},{"./src/query":9}]},{},[])("/index.js")
+});
