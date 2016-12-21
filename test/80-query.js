@@ -44,4 +44,52 @@ describe( 'query', function () {
 
     } );
     
+    describe( 'isUniverse() / isZeroSet() - ', function () {
+    
+        it( 'empty query is the universe', function () {
+            (new query( '' )).isUniverse().should.be.true();
+            (new query( '' )).isZeroSet().should.be.false();
+        } );
+        
+        it( 'any query with any term or tag is neither zero nor universe', function () {
+            [
+                'a',
+                '!a',
+                'attr:val',
+                '!attr:val'
+            ].forEach( ( test ) => {
+                (new query( test )).isUniverse().should.be.false();
+                (new query( test )).isZeroSet().should.be.false();
+            } );
+        } );
+        
+        it( 'conjunction with contradicting terms is the zero set', function () {
+            (new query( 'a !a' )).isZeroSet().should.be.true();
+            (new query( 'a !a' )).isUniverse().should.be.false();
+        } );
+        
+        it( 'conjunction with contradicting tags is the zero set', function () {
+            (new query( 'attr:val !attr:val' )).isZeroSet().should.be.true();
+            (new query( 'attr:val !attr:val' )).isUniverse().should.be.false();
+        } );
+        
+        it( 'disjunction with contradicting terms is the universe', function () {
+            (new query( 'a | !a' )).isUniverse().should.be.true();
+            (new query( 'a | !a' )).isZeroSet().should.be.false();
+        } );
+        
+        it( 'disjunction with contradicting tags is /neither zero nor universe/', function () {
+            (new query( 'attr:val | !attr:val' )).isUniverse().should.be.false();
+            (new query( 'attr:val | !attr:val' )).isZeroSet().should.be.false();
+        } );
+
+    
+    } );
+    
+    it( 'toString() should work', function () {
+        (new query( 'a | b !c' )).toString().should.equal(
+            (new query( '(a or b) not c' )).toString()
+        );
+    } );
+    
 } );

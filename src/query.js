@@ -44,6 +44,10 @@ module.exports = class query {
         this._parsed = parse( raw_query );  // parse() result
         this._subqueries = [];              // dissected query, as a list
         
+        // edge case: empty queries
+        if ( !this._parsed.getChildren().length )
+            return this;
+        
         // represent all queries as a set of disjunctive subqueries
         // e.g. ( "cars" ( "trains" | "planes" ) )
         //    -> ( "cars" "trains" ) OR ( "cars" "planes" )
@@ -104,8 +108,13 @@ module.exports = class query {
             }
             
             // TODO: canonical subquery ordering?
+            
         }
         
+    }
+    
+    toString () {
+        return this.toDisjunction().toString( 1 );
     }
     
     getSubqueries () {
@@ -114,6 +123,32 @@ module.exports = class query {
     
     toDisjunction () {
         return new expr.disj( this._subqueries );
+    }
+    
+    // does this query represent all queryable items?
+    isUniverse () {
+        
+        // empty query takes opposite meaning between 'expr' and 'query':
+        //   - an 'expr' with no children is zero set
+        //   - a 'query' with no subqueries is the universe
+        
+        //console.log( require('util').inspect( new expr.conj(this._subqueries).normalize(), {depth:10} ) );
+        
+        return (
+            !this._subqueries.length ||
+            this.toDisjunction().normalize().isUniverse()
+        );
+        
+    }
+    
+    // is this query unsatisfiable?
+    isZeroSet () {
+    
+        return (
+            !this.isUniverse() &&
+            this.toDisjunction().normalize().isZeroSet()
+        );
+        
     }
 
 };
