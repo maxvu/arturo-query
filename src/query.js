@@ -36,7 +36,7 @@ module.exports = class query {
 
     constructor ( raw_query, options ) {
     
-        options = Object.assign( DEFAULTS, options );
+        options = Object.assign( {}, DEFAULTS, options );
         
         assert.query_length( raw_query.length, options.max_query_length );
         
