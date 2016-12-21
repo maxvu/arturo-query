@@ -40,7 +40,7 @@ class tok {
     }
     
     error ( msg ) {
-        return new error( this, msg );
+        return new error( this.getSite(), msg );
     }
 };
 
