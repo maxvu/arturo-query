@@ -10,6 +10,10 @@
 * Negation (`!`, `-` and `not`), disjunctive (`|`, `or`) and grouping (`()`) operators.
 * Logical refactoring toward disjunction-of-conjunctions.
 
+## Live Demo
+
+See [here](https://maxvu.github.io/arturo-query/).
+
 ## Examples
 
 ### `moonkeys | boars`
